@@ -242,7 +242,12 @@ sub process_cpp {
     # otherwise check license
     my $license = "Published under the GNU General Public License v3.0";
     expect($path, $i, @data, " *\n"); ++$i;
-    expectr($path, $i, @data, " * All rights reserved. $license\n", qr/^ \*/); ++$i;
+    if ($data[$i] =~ /See special file license below/) {
+        ++$i;
+    }
+    else {
+        expectr($path, $i, @data, " * All rights reserved. $license\n", qr/^ \*/); ++$i;
+    }
     expect($path, $i, @data, " ".('*'x78)."/\n"); ++$i;
 
     # check include guard name
