@@ -486,6 +486,9 @@ foreach my $file (@filelist)
     if ($file =~ m!(^|/)\.pio!) {
         # skip build directory names
     }
+    elsif ($file =~ m!(^|/)b$!) {
+        # skip build directory names
+    }
     elsif ($file =~ /\.(h|cpp|hpp|h\.in|dox)$/) {
         process_cpp($file);
     }

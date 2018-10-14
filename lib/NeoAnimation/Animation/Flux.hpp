@@ -80,7 +80,7 @@ class WheelColorTest
 public:
     WheelColorTest(LEDStrip&) { }
 
-    uint32_t operator () (LEDStrip& strip, uint32_t s) {
+    uint32_t operator () (LEDStrip& strip, uint32_t /* s */) {
         size_t strip_size = strip.size();
         unsigned intensity = strip.intensity();
 
@@ -122,12 +122,13 @@ public:
 
     uint32_t operator () (LEDStrip& strip, uint32_t s) {
         size_t strip_size = strip.size();
-        // unsigned intensity = strip.intensity();
+        unsigned intensity = strip.intensity();
 
         for (size_t i = 0; i < strip_size; ++i) {
             size_t j = i / 300;
             strip.setPixel(
-                i, HSVColor((s + j * HSV_HUE_MAX / 5) % HSV_HUE_MAX, 255, 255));
+                i, HSVColor((s + j * HSV_HUE_MAX / 5) % HSV_HUE_MAX,
+                            255, intensity));
         }
 
         return 200;
@@ -153,13 +154,13 @@ public:
                 strip.setPixel(i, Color(intensity));
             }
             strip.show();
-            delay(25);
+            strip.delay(25);
 
             for (size_t i = 0; i < strip_size; ++i) {
                 strip.setPixel(i, Color(0));
             }
             strip.show();
-            delay(25);
+            strip.delay(25);
         }
 
         return 0;
@@ -172,7 +173,7 @@ template <typename LEDStrip>
 class SparkleWhite
 {
 public:
-    SparkleWhite(LEDStrip& strip)
+    SparkleWhite(LEDStrip&)
         : seed(static_cast<uint32_t>(random(10000000))) { }
 
     size_t pix = 4;
@@ -235,13 +236,13 @@ public:
 };
 
 template <typename NeoPixelBus>
-void setPixelFireColor(NeoPixelBus& strip, int Pixel, byte temperature) {
+void setPixelFireColor(NeoPixelBus& strip, int Pixel, uint8_t temperature) {
     // Scale 'heat' down from 0-255 to 0-191
-    byte t192 = round((temperature / 255.0) * 191);
+    uint8_t t192 = round((temperature / 255.0) * 191);
 
     // calculate ramp up from
-    byte heatramp = t192 & 0x3F; // 0..63
-    heatramp <<= 2;              // scale up to 0..252
+    uint8_t heatramp = t192 & 0x3F; // 0..63
+    heatramp <<= 2;                 // scale up to 0..252
 
     // figure out which third of the spectrum we're in:
     Color c = Color(0);
@@ -259,17 +260,17 @@ void setPixelFireColor(NeoPixelBus& strip, int Pixel, byte temperature) {
 }
 
 template <typename NeoPixelBus>
-void setPixelFireIceColor(NeoPixelBus& strip, int Pixel, byte heat, byte ice) {
+void setPixelFireIceColor(NeoPixelBus& strip, int Pixel, uint8_t heat, uint8_t ice) {
     // Scale 'heat' down from 0-255 to 0-191
-    byte h192 = round((heat / 255.0) * 191);
+    uint8_t h192 = round((heat / 255.0) * 191);
 
     // calculate ramp up from
-    byte heatramp = h192 & 0x3F; // 0..63
-    heatramp <<= 2;              // scale up to 0..252
+    uint8_t heatramp = h192 & 0x3F; // 0..63
+    heatramp <<= 2;                 // scale up to 0..252
 
-    byte i192 = round((ice / 255.0) * 191);
-    byte iceramp = i192 & 0x3F; // 0..63
-    iceramp <<= 2;              // scale up to 0..252
+    uint8_t i192 = round((ice / 255.0) * 191);
+    uint8_t iceramp = i192 & 0x3F; // 0..63
+    iceramp <<= 2;                 // scale up to 0..252
 
     uint16_t r = 0, g = 0, b = 0;
 
@@ -322,7 +323,7 @@ public:
     static const size_t Cooling = 20;
     static const size_t Sparking = 160;
 
-    uint32_t operator () (LEDStrip& strip, uint32_t s) {
+    uint32_t operator () (LEDStrip& strip, uint32_t /* s */) {
         // Step 1. Cool down every cell a little
         for (size_t i = 0; i < strip_size; i++) {
             size_t cooldown = random(0, ((Cooling * 10) / strip_size) + 2);
@@ -359,7 +360,7 @@ public:
 private:
     LEDStrip& strip;
 
-    std::vector<byte> heat;
+    std::vector<uint8_t> heat;
     size_t strip_size;
 };
 
@@ -376,7 +377,7 @@ public:
     static const size_t Cooling = 45;
     static const size_t Sparking = 250;
 
-    uint32_t operator () (LEDStrip& strip, uint32_t s) {
+    uint32_t operator () (LEDStrip& strip, uint32_t /* s */) {
         // Step 1. Cool down every cell a little
         for (size_t i = 0; i < strip_size; i++) {
             size_t cooldown = random(0, ((Cooling * 10) / strip_size) + 2);
@@ -440,7 +441,7 @@ public:
 private:
     LEDStrip& strip;
 
-    std::vector<byte> heat, ice;
+    std::vector<uint8_t> heat, ice;
     size_t strip_size;
 };
 
@@ -459,11 +460,11 @@ public:
     std::vector<Pixi> pixis;
 
     SprayColor(LEDStrip& strip) {
-        size_t strip_size = 5 * 300;
+        size_t strip_size = strip.size();
         pixis.resize(strip_size / 5);
     }
 
-    uint32_t operator () (LEDStrip& strip, uint32_t s) {
+    uint32_t operator () (LEDStrip& strip, uint32_t /* s */) {
         size_t strip_size = strip.size();
         strip_size = 5 * 300;
 
@@ -521,12 +522,12 @@ public:
     std::default_random_engine rng;
     std::normal_distribution<float> norm;
 
-    Fireworks(LEDStrip& strip)
+    Fireworks(LEDStrip&)
         : rng(/* seed */ static_cast<uint32_t>(random(10000000))) {
         pixis.resize(10);
     }
 
-    uint32_t operator () (LEDStrip& strip, uint32_t s) {
+    uint32_t operator () (LEDStrip& strip, uint32_t /* s */) {
         size_t strip_size = strip.size();
         strip_size = 7 * 300;
 
