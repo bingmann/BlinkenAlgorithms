@@ -24,7 +24,7 @@ void RunRandomAlgorithmAnimation(LEDStrip& strip) {
         using namespace NeoHashTable;
 
         size_t a = random(21);
-        a = 20;
+        a = 4;
         switch (a) {
         case 0:
             RunSort(strip, SelectionSort);

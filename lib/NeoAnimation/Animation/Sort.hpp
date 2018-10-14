@@ -23,6 +23,8 @@ namespace NeoSort {
 
 using namespace NeoAnimation;
 
+static const uint16_t black = uint16_t(-1);
+
 /******************************************************************************/
 //! custom struct for array items, which allows detailed counting of comparisons
 
@@ -731,6 +733,12 @@ public:
         }
     }
 
+    void array_black() {
+        for (uint32_t i = 0; i < array_size; ++i) {
+            A[i].SetNoDelay(black);
+        }
+    }
+
     unsigned intensity_high = 255;
     unsigned intensity_low = 64;
 
@@ -748,14 +756,22 @@ public:
     uint16_t value_to_hue(size_t i) { return i * HSV_HUE_MAX / array_size; }
 
     void flash_low(size_t i) {
-        strip_.setPixel(
-            i, HSVColor(value_to_hue(A[i].value_), 255, intensity_low));
+        if (A[i].value_ == black)
+            strip_.setPixel(i, 0);
+        else
+            strip_.setPixel(
+                i, HSVColor(value_to_hue(A[i].value_), 255, intensity_low));
     }
 
     void flash_high(size_t i) {
-        Color c = HSVColor(value_to_hue(A[i].value_), 255, intensity_high);
-        c.w = 128;
-        strip_.setPixel(i, c);
+        if (A[i].value_ == black) {
+            strip_.setPixel(i, Color(intensity_high));
+        }
+        else {
+            Color c = HSVColor(value_to_hue(A[i].value_), 255, intensity_high);
+            c.white = 128;
+            strip_.setPixel(i, c);
+        }
     }
 
     size_t frame_buffer[128] = { 0 };

@@ -20,118 +20,6 @@ namespace NeoHashTable {
 
 using namespace NeoSort;
 
-static const uint16_t black = uint16_t(-1);
-
-template <typename LEDStrip>
-class HashAnimation : public SortAnimation<LEDStrip>
-{
-public:
-    using Super = SortAnimation<LEDStrip>;
-    using Super::strip_;
-
-    HashAnimation(LEDStrip& strip) : Super(strip) { }
-
-    void array_black() {
-        for (uint32_t i = 0; i < array_size; ++i) {
-            A[i].SetNoDelay(black);
-        }
-    }
-
-    unsigned intensity_high = 255;
-    unsigned intensity_low = 32;
-
-    void OnChange(const Item* a, bool with_delay) final {
-        if (a < A.data() || a >= A.data() + array_size)
-            return;
-        flash(a - A.data(), with_delay);
-    }
-
-    void yield_delay() {
-        // delayMicroseconds(100);
-        delay_millis(10);
-    }
-
-    uint16_t value_to_hue(size_t i) { return i * HSV_HUE_MAX / array_size; }
-
-    void flash_low(size_t i) {
-        if (A[i].value_ == black)
-            strip_.setPixel(i, 0);
-        else
-            strip_.setPixel(
-                i, HSVColor(value_to_hue(A[i].value_), 255, intensity_low));
-    }
-
-    void flash_high(size_t i) {
-        if (A[i].value_ == black) {
-            strip_.setPixel(i, Color(intensity_high));
-        }
-        else {
-            Color c = HSVColor(value_to_hue(A[i].value_), 255, intensity_high);
-            c.white = 128;
-            strip_.setPixel(i, c);
-        }
-    }
-
-    using Super::frame_buffer;
-    using Super::frame_buffer_pos;
-    using Super::frame_drop;
-
-    void flash(size_t i, bool with_delay = true) {
-
-        if (!with_delay)
-            return flash_low(i);
-
-        if (frame_drop == 0) {
-            flash_high(i);
-
-            if (!strip_.busy())
-                strip_.show();
-
-            yield_delay();
-
-            flash_low(i);
-        }
-        else {
-            flash_high(i);
-            frame_buffer[frame_buffer_pos] = i;
-
-            if (frame_buffer_pos == 0) {
-                if (!strip_.busy()) {
-                    strip_.show();
-                }
-
-                // reset pixels in this frame_buffer_pos
-                for (size_t j = 0; j < frame_drop; ++j) {
-                    if (frame_buffer[j] < array_size)
-                        flash_low(frame_buffer[j]);
-                }
-
-                frame_buffer_pos = frame_drop - 1;
-                yield_delay();
-            }
-            else {
-                --frame_buffer_pos;
-            }
-        }
-    }
-
-    void pflush() {
-        // reset pixels in this frame_buffer_pos
-        for (size_t j = 0; j < frame_drop; ++j) {
-            if (frame_buffer[j] < array_size)
-                flash_low(frame_buffer[j]);
-        }
-
-        frame_buffer_pos = frame_drop - 1;
-        // yield_all();
-
-        // if (delay_time != 0)
-        //     yield_micros(delay_time);
-
-        strip_.show();
-    }
-};
-
 /******************************************************************************/
 // Hashing with Linear Probing
 
@@ -301,7 +189,7 @@ void CuckooHashingThree() {
 
 template <typename LEDStrip>
 void RunHash(LEDStrip& strip, void (* hash_function)()) {
-    HashAnimation<LEDStrip> ani(strip);
+    SortAnimation<LEDStrip> ani(strip);
     ani.array_black();
     hash_function();
 }
