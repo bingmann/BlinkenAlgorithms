@@ -53,11 +53,11 @@ static inline Color WheelColor(uint32_t i, uint8_t intensity) {
     if (i < 170) {
         i -= 85;
         return Color(
-            0, (i * 3) * 255u / intensity, (256 - i * 3) * 255u / intensity);
+            0, (i * 3) * 255u / intensity, (255 - i * 3) * 255u / intensity);
     }
     i -= 170;
     return Color(
-        (i * 3) * 255u / intensity, (256 - i * 3) * 255u / intensity, 0);
+        (i * 3) * 255u / intensity, (255 - i * 3) * 255u / intensity, 0);
 }
 
 //! Input a value 0 to 255 to get a color value.
@@ -73,12 +73,12 @@ static inline Color WheelColorWhite(uint32_t i, uint8_t intensity) {
     if (i < 128) {
         i -= 64;
         return Color(
-            0, (i * 4) * 255u / intensity, (256 - i * 4) * 255u / intensity);
+            0, (i * 4) * 255u / intensity, (255 - i * 4) * 255u / intensity);
     }
     if (i < 192) {
         i -= 128;
         return Color(
-            (i * 4) * 255u / intensity, (256 - i * 4) * 255u / intensity, 0);
+            (i * 4) * 255u / intensity, (255 - i * 4) * 255u / intensity, 0);
     }
     i -= 192;
     return Color(
