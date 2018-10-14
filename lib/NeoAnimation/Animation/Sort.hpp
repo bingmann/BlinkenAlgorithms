@@ -24,6 +24,7 @@ namespace NeoSort {
 using namespace NeoAnimation;
 
 static const uint16_t black = uint16_t(-1);
+static const uint16_t unsigned_negative = uint16_t(32678);
 
 /******************************************************************************/
 //! custom struct for array items, which allows detailed counting of comparisons
@@ -472,8 +473,10 @@ void MergeSortIterative() {
 // Shell's Sort
 
 void ShellSort() {
-    size_t incs[16] = { 1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968,
-                        861, 336, 112, 48, 21, 7, 3, 1 };
+    size_t incs[16] = {
+        1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968,
+        861, 336, 112, 48, 21, 7, 3, 1
+    };
 
     for (size_t k = 0; k < 16; k++) {
         for (size_t h = incs[k], i = h; i < array_size; i++) {

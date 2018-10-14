@@ -10,6 +10,7 @@
 #define NEOANIMATION_ANIMATION_RANDOMALGORITHM_HEADER
 
 #include <NeoAnimation/Animation/HashTable.hpp>
+#include <NeoAnimation/Animation/LawaSAT.hpp>
 #include <NeoAnimation/Animation/Sort.hpp>
 
 namespace NeoAnimation {
@@ -22,9 +23,9 @@ void RunRandomAlgorithmAnimation(LEDStrip& strip) {
 
         using namespace NeoSort;
         using namespace NeoHashTable;
+        using namespace NeoLawaSAT;
 
-        size_t a = random(21);
-        a = 4;
+        size_t a = random(22);
         switch (a) {
         case 0:
             RunSort(strip, SelectionSort);
@@ -89,6 +90,10 @@ void RunRandomAlgorithmAnimation(LEDStrip& strip) {
             break;
         case 20:
             RunHash(strip, CuckooHashingThree);
+            break;
+
+        case 21:
+            RunLawaSAT(strip);
             break;
         }
     }
