@@ -11,6 +11,16 @@
 
 #include <NeoAnimation/Color.hpp>
 
+// fix problem with Teensy's compile chain and <random>
+#if TEENSYDUINO
+namespace std {
+double max(float a, double b) {
+    return std::max(static_cast<double>(a), b);
+}
+
+} // namespace std
+#endif
+
 #include <random>
 
 namespace NeoAnimation {

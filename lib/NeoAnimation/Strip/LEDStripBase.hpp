@@ -29,7 +29,7 @@ public:
     }
 
     unsigned long millis() {
-#if ESP8266
+#if ESP8266 || TEENSYDUINO
         return ::millis();
 #else
         return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -38,7 +38,7 @@ public:
     }
 
     unsigned long micros() {
-#if ESP8266
+#if ESP8266 || TEENSYDUINO
         return ::micros();
 #else
         return std::chrono::duration_cast<std::chrono::microseconds>(
@@ -53,6 +53,9 @@ public:
     void delay_micros(uint32_t usec) {
 #if ESP8266
         ESP.wdtFeed();
+        if (usec != 0)
+            delayMicroseconds(usec);
+#elif TEENSYDUINO
         if (usec != 0)
             delayMicroseconds(usec);
 #else
