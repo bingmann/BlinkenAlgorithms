@@ -22,11 +22,11 @@ static const size_t s_samplerate = 44100;
 //! global sound on/off switch
 bool g_sound_on = true;
 
-//! multiplying g_delay with this value yields the duration a sound is sustained
-double g_sound_sustain = 2.0;
+//! the duration each sound is sustained
+float g_sound_sustain = 0.1;
 
 //! limit the number of oscillators to avoid overloading the callback
-static const size_t s_max_oscillators = 348;
+static const size_t s_max_oscillators = 32;
 
 //! Oscillator generating sine or triangle waves
 class Oscillator
@@ -43,7 +43,7 @@ protected:
 
 public:
     //! construct new oscillator
-    Oscillator(float freq, size_t tstart, size_t duration = 44100 / 8)
+    Oscillator(float freq, size_t tstart, size_t duration)
         : m_freq(freq), m_tstart(tstart),
           m_tend(m_tstart + duration),
           m_duration(duration)
@@ -91,7 +91,7 @@ public:
 
         static const uint32_t attack = 0.2 * unit;   // percentage of duration
         static const uint32_t decay = 0.2 * unit;    // percentage of duration
-        static const uint32_t sustain = 0.4 * unit;  // percentage of amplitude
+        static const uint32_t sustain = 0.8 * unit;  // percentage of amplitude
         static const uint32_t release = 0.2 * unit;  // percentage of duration
 
         if (x < attack)
@@ -194,7 +194,6 @@ void SoundReset() {
 }
 
 static size_t array_max = 0;
-static float g_delay = 25;
 
 //! sound generator callback run by SDL
 void SoundCallback(void* /* udata */, Uint8* stream, int len) {
@@ -224,17 +223,17 @@ void SoundCallback(void* /* udata */, Uint8* stream, int len) {
                 s_access_list[i] / static_cast<float>(array_max));
 
             add_oscillator(freq, p, p + i * pscale,
-                           g_delay / 1000.0 * g_sound_sustain * s_samplerate);
+                           g_sound_sustain * s_samplerate);
         }
 
         s_access_list.clear();
     }
 
-    static int32_t volume_factor = 100;
-    int32_t this_maximum = 0.0;
+    static int64_t volume_factor = 10000;
+    int64_t this_maximum = 0.0;
 
     for (size_t i = 0; i < size; ++i) {
-        int32_t v = 0;
+        int64_t v = 0;
 
         for (std::vector<Oscillator>::const_iterator it = s_osclist.begin();
              it != s_osclist.end(); ++it)
@@ -245,10 +244,14 @@ void SoundCallback(void* /* udata */, Uint8* stream, int len) {
 
         v = (v * volume_factor) >> 16;
 
-        if (v > 32760)
+        if (v > 32760) {
             v = 32760;
-        if (v < -32760)
+            // std::cout << "clip upper" << std::endl;
+        }
+        if (v < -32760) {
             v = -32760;
+            // std::cout << "clip lower" << std::endl;
+        }
 
         this_maximum = std::max(this_maximum, std::abs(v));
 
@@ -260,21 +263,21 @@ void SoundCallback(void* /* udata */, Uint8* stream, int len) {
     //           << " volume_factor " << volume_factor
     //           << std::endl;
 
-    if (this_maximum < 20000) {
-        volume_factor = volume_factor * 120 / 100;
-    }
-    else if (this_maximum < 24000) {
-        volume_factor = volume_factor * 105 / 100;
-    }
-    else if (this_maximum > 48000) {
-        volume_factor = volume_factor * 50 / 100;
-    }
-    else if (this_maximum > 36000) {
-        volume_factor = volume_factor * 90 / 100;
-    }
-    else if (this_maximum > 24000) {
-        volume_factor = volume_factor * 95 / 100;
-    }
+    // if (this_maximum < 20000) {
+    //     volume_factor = volume_factor * 120 / 100;
+    // }
+    // else if (this_maximum < 24000) {
+    //     volume_factor = volume_factor * 105 / 100;
+    // }
+    // else if (this_maximum > 48000) {
+    //     volume_factor = volume_factor * 50 / 100;
+    // }
+    // else if (this_maximum > 36000) {
+    //     volume_factor = volume_factor * 90 / 100;
+    // }
+    // else if (this_maximum > 24000) {
+    //     volume_factor = volume_factor * 95 / 100;
+    // }
 
     // advance sample timestamp
     p += size;
