@@ -98,7 +98,7 @@ public:
             return unit / attack * x;
 
         if (x < attack + decay)
-            return unit - (x - attack) / decay * (unit - sustain);
+            return unit - (x - attack) * (unit - sustain) / decay;
 
         if (x < unit - release)
             return sustain;
