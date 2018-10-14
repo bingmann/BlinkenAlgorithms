@@ -27,10 +27,10 @@ template <template <class> class Animation,
 void RunAnimation(LEDStrip& strip1,
                   size_t time_limit) {
     Animation<LEDStrip> ani1(strip1);
-    uint32_t ts_end = strip1.micros() + 1000 * time_limit;
+    uint32_t ts_end = micros() + 1000 * time_limit;
     g_terminate = false;
 
-    for (uint32_t s = 0; strip1.micros() < ts_end; ++s) {
+    for (uint32_t s = 0; micros() < ts_end; ++s) {
         uint32_t d = ani1(strip1, s);
 
         if (d == EndAnimation)
@@ -43,7 +43,7 @@ void RunAnimation(LEDStrip& strip1,
             }
         }
 
-        strip1.delay_micros(d);
+        delay_micros(d);
 
         if (g_terminate)
             break;
@@ -58,7 +58,7 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
                   size_t time_limit) {
     Animation1<LEDStrip1> ani1(strip1);
     Animation2<LEDStrip2> ani2(strip2);
-    uint32_t ts_end = strip1.micros() + 1000 * time_limit;
+    uint32_t ts_end = micros() + 1000 * time_limit;
     uint32_t s1 = 0, s2 = 0;
     uint32_t d1 = 0, d2 = 0;
     bool dirty1 = false, dirty2 = false;
@@ -66,7 +66,7 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
     g_terminate = false;
 
     while (true) {
-        uint32_t ts = strip1.micros();
+        uint32_t ts = micros();
         if (ts_end < ts)
             break;
 
@@ -104,7 +104,7 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
 
         uint32_t d = std::min(d1, d2);
         if (d >= ts)
-            strip1.delay_micros(d - ts);
+            delay_micros(d - ts);
 
         if (d1 == EndAnimation && d2 == EndAnimation)
             break;
@@ -126,7 +126,7 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
     Animation1<LEDStrip1> ani1(strip1);
     Animation2<LEDStrip2> ani2(strip2);
     Animation3<LEDStrip3> ani3(strip3);
-    uint32_t ts_end = strip1.micros() + 1000 * time_limit;
+    uint32_t ts_end = micros() + 1000 * time_limit;
     uint32_t s1 = 0, s2 = 0, s3 = 0;
     uint32_t d1 = 0, d2 = 0, d3 = 0;
     bool dirty1 = false, dirty2 = false, dirty3 = false;
@@ -134,7 +134,7 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
     g_terminate = false;
 
     while (true) {
-        uint32_t ts = strip1.micros();
+        uint32_t ts = micros();
         if (ts_end < ts)
             break;
 
@@ -187,7 +187,7 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
 
         uint32_t d = std::min(std::min(d1, d2), d3);
         if (d >= ts)
-            strip1.delay_micros(d - ts);
+            strip1.micros(d - ts);
 
         if (d1 == EndAnimation && d2 == EndAnimation &&
             d3 == EndAnimation)

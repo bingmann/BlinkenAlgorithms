@@ -9,13 +9,6 @@
 #ifndef NEOANIMATION_STRIP_LEDSTRIPBASE_HEADER
 #define NEOANIMATION_STRIP_LEDSTRIPBASE_HEADER
 
-#if ESP8266
-// no includes
-#else
-#include <chrono>
-#include <thread>
-#endif
-
 namespace NeoAnimation {
 
 /******************************************************************************/
@@ -26,42 +19,6 @@ class LEDStripBase
 public:
     uint8_t intensity() {
         return 255;
-    }
-
-    unsigned long millis() {
-#if ESP8266 || TEENSYDUINO
-        return ::millis();
-#else
-        return std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-#endif
-    }
-
-    unsigned long micros() {
-#if ESP8266 || TEENSYDUINO
-        return ::micros();
-#else
-        return std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-#endif
-    }
-
-    void delay(uint32_t msec) {
-        delay_micros(msec * 1000);
-    }
-
-    void delay_micros(uint32_t usec) {
-#if ESP8266
-        ESP.wdtFeed();
-        if (usec != 0)
-            delayMicroseconds(usec);
-#elif TEENSYDUINO
-        if (usec != 0)
-            delayMicroseconds(usec);
-#else
-        if (usec != 0)
-            std::this_thread::sleep_for(std::chrono::microseconds(usec));
-#endif
     }
 };
 

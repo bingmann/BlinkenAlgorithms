@@ -10,6 +10,7 @@
 #define NEOANIMATION_ANIMATION_FLUX_HEADER
 
 #include <NeoAnimation/Color.hpp>
+#include <NeoAnimation/Control.hpp>
 
 // fix problem with Teensy's compile chain and <random>
 #if TEENSYDUINO

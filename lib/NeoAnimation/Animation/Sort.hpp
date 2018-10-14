@@ -10,6 +10,7 @@
 #define NEOANIMATION_ANIMATION_SORT_HEADER
 
 #include <NeoAnimation/Color.hpp>
+#include <NeoAnimation/Control.hpp>
 
 #include <cassert>
 #include <random>
@@ -741,7 +742,7 @@ public:
 
     void yield_delay() {
         // delayMicroseconds(100);
-        delay(1);
+        delay_millis(1);
     }
 
     uint16_t value_to_hue(size_t i) { return i * HSV_HUE_MAX / array_size; }

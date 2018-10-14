@@ -6,18 +6,6 @@
  * All rights reserved. Published under the GNU General Public License v3.0
  ******************************************************************************/
 
-#include <cstdint>
-#include <cstdlib>
-
-// add missing global functions
-uint32_t random(uint32_t limit) {
-    return ::random() % limit;
-}
-
-uint32_t random(uint32_t begin, uint32_t limit) {
-    return ::random() % (limit - begin) + begin;
-}
-
 #include <NeoAnimation/Animation/Flux.hpp>
 #include <NeoAnimation/RunAnimation.hpp>
 #include <NeoAnimation/Strip/PiSPI_APA102.hpp>
