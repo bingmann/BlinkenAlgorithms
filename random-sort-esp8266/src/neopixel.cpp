@@ -8,8 +8,7 @@
 
 #include <Arduino.h>
 
-#include <NeoAnimation/Animation/Sort.hpp>
-#include <NeoAnimation/RunAnimation.hpp>
+#include <NeoAnimation/Animation/RandomAlgorithm.hpp>
 #include <NeoAnimation/Strip/NeoPixelBusAdapter.hpp>
 
 // four element pixels, RGBW SK6812 strip
@@ -59,11 +58,10 @@ void setup() {
 }
 
 using namespace NeoAnimation;
-using namespace NeoSort;
 
 void loop() {
     NeoPixelBusAdapter<decltype(strip)> my_strip(strip);
-    RunRandomSortAnimation(my_strip);
+    RunRandomAlgorithmAnimation(my_strip);
 }
 
 /******************************************************************************/

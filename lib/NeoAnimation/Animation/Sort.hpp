@@ -851,69 +851,6 @@ void RunAllSortAnimation(LEDStrip& strip) {
     RunSort(strip, BozoSort);
 }
 
-template <typename LEDStrip>
-void RunRandomSortAnimation(LEDStrip& strip) {
-    while (1) {
-        for (size_t i = 0; i < strip.size(); ++i)
-            strip.setPixel(i, 0);
-
-        size_t a = random(17);
-        switch (a) {
-        case 0:
-            RunSort(strip, SelectionSort);
-            break;
-        case 1:
-            RunSort(strip, InsertionSort);
-            break;
-        case 2:
-            RunSort(strip, BubbleSort);
-            break;
-        case 3:
-            RunSort(strip, CocktailShakerSort);
-            break;
-        case 4:
-            RunSort(strip, QuickSortLR);
-            break;
-        case 5:
-            RunSort(strip, QuickSortDualPivot);
-            break;
-        case 6:
-            RunSort(strip, MergeSort);
-            break;
-        case 7:
-            RunSort(strip, ShellSort);
-            break;
-        case 8:
-            RunSort(strip, HeapSort);
-            break;
-        case 9:
-            RunSort(strip, CycleSort);
-            break;
-        case 10:
-            RunSort(strip, RadixSortMSD);
-            break;
-        case 11:
-            RunSort(strip, RadixSortLSD);
-            break;
-        case 12:
-            RunSort(strip, StdSort);
-            break;
-        case 13:
-            RunSort(strip, StdStableSort);
-            break;
-        case 14:
-            RunSort(strip, WikiSort);
-            break;
-        case 15:
-            RunSort(strip, TimSort);
-            break;
-        case 16:
-            RunSort(strip, BozoSort);
-            break;
-        }
-    }
-}
-
 } // namespace NeoSort
 
 #endif // !NEOANIMATION_ANIMATION_SORT_HEADER
