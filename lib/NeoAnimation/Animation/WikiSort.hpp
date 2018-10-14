@@ -1,6 +1,8 @@
 /*******************************************************************************
  * lib/NeoAnimation/Animation/WikiSort.hpp
  *
+ * Implementation of "WikiSort". Written by Mike McFadden (BonzaiThePenguin).
+ * Taken from https://github.com/BonzaiThePenguin/WikiSort
  *
  * See special file license below.
  ******************************************************************************/
@@ -9,12 +11,6 @@
 #define NEOANIMATION_ANIMATION_WIKISORT_HEADER
 
 /******************************************************************************
- * WikiSort.hpp
- *
- * Implementation of "WikiSort". Written by Mike McFadden (BonzaiThePenguin).
- * Taken from https://github.com/BonzaiThePenguin/WikiSort
- *
- ******************************************************************************
  * This is free and unencumbered software released into the public domain.
  *
  * Anyone is free to copy, modify, publish, use, compile, sell, or distribute

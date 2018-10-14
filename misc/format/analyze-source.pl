@@ -232,16 +232,28 @@ sub process_cpp {
     expectr($path, $i, @data, " * $path\n", qr/^ \* /); ++$i;
     expect($path, $i, @data, " *\n"); ++$i;
 
+    # skip over custom file comments
+    my $j = $i;
+    while ($data[$i] !~ /^ \* (Copyright|.*license)/i) {
+        expect_re($path, $i, @data, '^ \*( .*|$)');
+        if (++$i >= @data) {
+            $i = $j; # restore read position
+            last;
+        }
+    }
+
     # read authors
-    while ($data[$i] =~ /^ \* Copyright \(C\) ([0-9-]+(, [0-9-]+)*) (?<name>[^0-9<]+)( <(?<mail>[^>]+)>)?\n/) {
-        #print "Author: $+{name} - $+{mail}\n";
-        $authormap{$+{name}}{$+{mail} || ""} = 1;
-        die unless ++$i < @data;
+    if ($data[$i] =~ /^ \* Copyright/i) {
+        while ($data[$i] =~ /^ \* Copyright \(C\) ([0-9-]+(, [0-9-]+)*) (?<name>[^0-9<]+)( <(?<mail>[^>]+)>)?\n/) {
+            #print "Author: $+{name} - $+{mail}\n";
+            $authormap{$+{name}}{$+{mail} || ""} = 1;
+            die unless ++$i < @data;
+        }
+        expect($path, $i, @data, " *\n"); ++$i;
     }
 
     # otherwise check license
     my $license = "Published under the GNU General Public License v3.0";
-    expect($path, $i, @data, " *\n"); ++$i;
     if ($data[$i] =~ /See special file license below/) {
         ++$i;
     }

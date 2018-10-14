@@ -1,6 +1,14 @@
 /*******************************************************************************
  * lib/NeoAnimation/Animation/TimSort.hpp
  *
+ * C++ implementation of timsort
+ *
+ * http://en.wikipedia.org/wiki/Timsort
+ * code from https://github.com/gfx/cpp-TimSort
+ *
+ * ported from Python's and OpenJDK's:
+ * - http://svn.python.org/projects/python/trunk/Objects/listobject.c
+ * - http://cr.openjdk.java.net/~martin/webrevs/openjdk7/timsort/raw_files/new/src/share/classes/java/util/TimSort.java
  *
  * See special file license below.
  ******************************************************************************/
@@ -9,15 +17,6 @@
 #define NEOANIMATION_ANIMATION_TIMSORT_HEADER
 
 /*
- * C++ implementation of timsort
- *
- *   http://en.wikipedia.org/wiki/Timsort
- *   code from https://github.com/gfx/cpp-TimSort
- *
- * ported from Python's and OpenJDK's:
- * - http://svn.python.org/projects/python/trunk/Objects/listobject.c
- * - http://cr.openjdk.java.net/~martin/webrevs/openjdk7/timsort/raw_files/new/src/share/classes/java/util/TimSort.java
- *
  * Copyright (c) 2011 Fuji, Goro (gfx) <gfuji@cpan.org>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
