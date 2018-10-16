@@ -7,21 +7,7 @@
  ******************************************************************************/
 
 #include <Arduino.h>
-
-/******************************************************************************/
-
-// fix problems in Teensy framework
-extern "C" {
-int _getpid() {
-    return -1;
-}
-int _kill(int pid, int sig) {
-    return -1;
-}
-int _write() {
-    return -1;
-}
-} // extern "C"
+#include <NeoAnimation/Porting/Teensy.hpp>
 
 /******************************************************************************/
 
@@ -45,6 +31,7 @@ bool g_terminate = false;
 
 void setup() {
     Serial.begin(115200);
+    Serial.println("Starting...");
 
     unsigned long seed = 0;
     for (int i = 0; i < 32; i++) {

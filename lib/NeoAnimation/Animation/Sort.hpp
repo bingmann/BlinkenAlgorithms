@@ -764,7 +764,7 @@ public:
     }
 
     void yield_delay() {
-        if (delay_time_ >= 0)
+        if (delay_time_ > 0)
             delay_micros(delay_time_);
     }
 
@@ -852,12 +852,12 @@ protected:
 };
 
 template <typename LEDStrip>
-void RunSort(LEDStrip& strip, void (* sort_function)(), int32_t delay_time = 10000) {
+void RunSort(LEDStrip& strip, void (*sort_function)(), int32_t delay_time = 10000) {
     uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     ani.array_randomize();
     sort_function();
-    std::cout << "Running time: " << (millis() - ts) / 1000.0 << std::endl;
+    printf("Running time: %.2f\n", (millis() - ts) / 1000.0);
     ani.array_check();
     ani.pflush();
 }

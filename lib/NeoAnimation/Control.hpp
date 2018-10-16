@@ -44,11 +44,9 @@ unsigned long millis() {
 #endif
 
 /******************************************************************************/
+// Timing, Delay, and Control Methods
 
 namespace NeoAnimation {
-
-/******************************************************************************/
-// Timing, Delay, and Control Methods
 
 static inline
 unsigned long micros() {
@@ -81,6 +79,19 @@ void delay_millis(uint32_t msec) {
 }
 
 } // namespace NeoAnimation
+
+/******************************************************************************/
+// Debug printing
+
+#if TEENSYDUINO
+
+namespace NeoAnimation {
+
+// Serial.printf("Running Algorithm %d\n", a);
+
+} // namespace NeoAnimation
+
+#endif // TEENSYDUINO
 
 #endif // !NEOANIMATION_CONTROL_HEADER
 
