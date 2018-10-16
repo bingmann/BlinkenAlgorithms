@@ -50,7 +50,7 @@ public:
                       << strerror(errno) << std::endl;
         }
 
-        spiSpeed_ = 8000000;
+        spiSpeed_ = 9600000;
         if (ioctl(fd_, SPI_IOC_WR_MAX_SPEED_HZ, &spiSpeed_) < 0) {
             std::cerr << "SPI Speed Change failure: "
                       << strerror(errno) << std::endl;

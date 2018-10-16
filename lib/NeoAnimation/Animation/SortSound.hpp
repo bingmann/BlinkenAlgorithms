@@ -19,7 +19,7 @@ bool g_sound_on = true;
 float g_sound_sustain = 0.05;
 
 //! limit the number of oscillators to avoid overloading the callback
-static const size_t s_max_oscillators = 4;
+static const size_t s_max_oscillators = 64;
 
 //! Oscillator generating sine or triangle waves
 class Oscillator
@@ -230,43 +230,45 @@ void SoundCallback(void* /* udata */, uint8_t* stream, int len) {
         s_access_list.clear();
     }
 
-    static int64_t volume_factor = 10000;
-    int32_t this_maximum = 0.0;
+    static int64_t volume_factor = 15000;
+    int64_t this_maximum = 0.0;
 
     for (size_t i = 0; i < size; ++i) {
-        int32_t v = 0;
+        int64_t v = 0;
 
         for (std::vector<Oscillator>::const_iterator it = s_osclist.begin();
              it != s_osclist.end(); ++it)
         {
             if (!it->is_done(p))
-                v += it->mix_value(p + i) >> 16;
+                v += it->mix_value(p + i) >> 12;
         }
 
-        v = (v * volume_factor) >> 16;
+        v = (v * volume_factor) >> 20;
 
-        if (v > 28000) {
-            v -= 28000;
+        this_maximum = std::max(this_maximum, std::abs(v));
+
+        if (v > 30000) {
+            v -= 30000;
             v /= 2;
-            v += 28000;
-            if (v > 30000) {
-                v -= 30000;
+            v += 30000;
+            if (v > 31000) {
+                v -= 31000;
                 v /= 2;
-                v += 30000;
+                v += 31000;
                 if (v > 32760) {
                     v = 32760;
                     // std::cout << "clip upper" << std::endl;
                 }
             }
         }
-        if (v < -28000) {
-            v += 28000;
+        if (v < -30000) {
+            v += 30000;
             v /= 2;
-            v -= 28000;
-            if (v < -30000) {
-                v += 30000;
+            v -= 30000;
+            if (v < -31000) {
+                v += 31000;
                 v /= 2;
-                v -= 30000;
+                v -= 31000;
                 if (v < -32760) {
                     v = -32760;
                     // std::cout << "clip lower" << std::endl;
@@ -274,31 +276,29 @@ void SoundCallback(void* /* udata */, uint8_t* stream, int len) {
             }
         }
 
-        this_maximum = std::max(this_maximum, std::abs(v));
-
         data[i] = v;
     }
 
-    // std::cout << "this_maximum " << this_maximum
-    //           << " this_maximum " << this_maximum
-    //           << " volume_factor " << volume_factor
-    //           << std::endl;
+    std::cout << "this_maximum " << this_maximum
+              << " this_maximum " << this_maximum
+              << " volume_factor " << volume_factor
+              << std::endl;
 
-    // if (this_maximum < 20000) {
-    //     volume_factor = volume_factor * 120 / 100;
+    // if (this_maximum < 25000) {
+    //     volume_factor = volume_factor * 101 / 100;
     // }
-    // else if (this_maximum < 24000) {
-    //     volume_factor = volume_factor * 105 / 100;
+    // else if (this_maximum < 30000) {
+    //     volume_factor = volume_factor * 101 / 100;
     // }
-    // else if (this_maximum > 48000) {
-    //     volume_factor = volume_factor * 50 / 100;
+    // else if (this_maximum > 30000) {
+    //     volume_factor = volume_factor * 99 / 100;
     // }
     // else if (this_maximum > 36000) {
-    //     volume_factor = volume_factor * 90 / 100;
+    //     volume_factor = volume_factor * 99 / 100;
     // }
-    // else if (this_maximum > 24000) {
-    //     volume_factor = volume_factor * 95 / 100;
-    // }
+
+    // if (volume_factor < 10)
+    //     volume_factor = 10;
 
     // advance sample timestamp
     p += size;
