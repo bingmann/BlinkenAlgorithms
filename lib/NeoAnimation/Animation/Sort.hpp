@@ -717,13 +717,17 @@ template <typename LEDStrip>
 class SortAnimation : public SortAnimationBase
 {
 public:
-    SortAnimation(LEDStrip& strip) : strip_(strip) {
+    SortAnimation(LEDStrip& strip, int32_t delay_time = 1000)
+        : strip_(strip), delay_time_(delay_time) {
         // hook sorting animation callbacks
         sort_animation_hook = this;
 
         // set strip size
         array_size = strip_.size();
         A.resize(array_size);
+
+        if (delay_time_ < 0)
+            frame_drop = -delay_time_;
     }
 
     void array_randomize() {
@@ -742,6 +746,14 @@ public:
         }
     }
 
+    void array_check() {
+        for (size_t i = 1; i < array_size; ++i) {
+            if (A[i - 1] >= A[i]) {
+                A[i - 1] = Item(black);
+            }
+        }
+    }
+
     unsigned intensity_high = 255;
     unsigned intensity_low = 64;
 
@@ -752,8 +764,8 @@ public:
     }
 
     void yield_delay() {
-        // delayMicroseconds(100);
-        delay_millis(1);
+        if (delay_time_ >= 0)
+            delay_micros(delay_time_);
     }
 
     uint16_t value_to_hue(size_t i) { return i * HSV_HUE_MAX / array_size; }
@@ -782,7 +794,6 @@ public:
     size_t frame_drop = 0;
 
     void flash(size_t i, bool with_delay = true) {
-
         if (!with_delay)
             return flash_low(i);
 
@@ -828,23 +839,27 @@ public:
         }
 
         frame_buffer_pos = frame_drop - 1;
-        // yield_all();
-
-        // if (delay_time != 0)
-        //     yield_micros(delay_time);
+        yield_delay();
 
         strip_.show();
     }
 
 protected:
     LEDStrip& strip_;
+
+    //! user given delay time.
+    int32_t delay_time_;
 };
 
 template <typename LEDStrip>
-void RunSort(LEDStrip& strip, void (* sort_function)()) {
-    SortAnimation<LEDStrip> ani(strip);
+void RunSort(LEDStrip& strip, void (* sort_function)(), int32_t delay_time = 10000) {
+    uint32_t ts = millis();
+    SortAnimation<LEDStrip> ani(strip, delay_time);
     ani.array_randomize();
     sort_function();
+    std::cout << "Running time: " << (millis() - ts) / 1000.0 << std::endl;
+    ani.array_check();
+    ani.pflush();
 }
 
 /******************************************************************************/

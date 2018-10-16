@@ -28,16 +28,16 @@ void RunRandomAlgorithmAnimation(LEDStrip& strip) {
         size_t a = random(22);
         switch (a) {
         case 0:
-            RunSort(strip, SelectionSort);
+            RunSort(strip, SelectionSort, -10);
             break;
         case 1:
-            RunSort(strip, InsertionSort);
+            RunSort(strip, InsertionSort, -3);
             break;
         case 2:
-            RunSort(strip, BubbleSort);
+            RunSort(strip, BubbleSort, -8);
             break;
         case 3:
-            RunSort(strip, CocktailShakerSort);
+            RunSort(strip, CocktailShakerSort, -8);
             break;
         case 4:
             RunSort(strip, QuickSortLR);
