@@ -239,18 +239,38 @@ void SoundCallback(void* /* udata */, Uint8* stream, int len) {
              it != s_osclist.end(); ++it)
         {
             if (!it->is_done(p))
-                v += it->mix_value(p + i) >> 16;
+                v += it->mix_value(p + i) >> 12;
         }
 
-        v = (v * volume_factor) >> 16;
+        v = (v * volume_factor) >> 20;
 
-        if (v > 32760) {
-            v = 32760;
-            // std::cout << "clip upper" << std::endl;
+        if (v > 28000) {
+            v -= 28000;
+            v /= 2;
+            v += 28000;
+            if (v > 30000) {
+                v -= 30000;
+                v /= 2;
+                v += 30000;
+                if (v > 32760) {
+                    v = 32760;
+                    std::cout << "clip upper" << std::endl;
+                }
+            }
         }
-        if (v < -32760) {
-            v = -32760;
-            // std::cout << "clip lower" << std::endl;
+        if (v < -28000) {
+            v += 28000;
+            v /= 2;
+            v -= 28000;
+            if (v < -30000) {
+                v += 30000;
+                v /= 2;
+                v -= 30000;
+                if (v < -32760) {
+                    v = -32760;
+                    std::cout << "clip lower" << std::endl;
+                }
+            }
         }
 
         this_maximum = std::max(this_maximum, std::abs(v));
