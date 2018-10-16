@@ -28,6 +28,9 @@ protected:
     //! frequency of generated wave
     float m_freq;
 
+    //! position on array normalized to [0,65536)
+    uint32_t m_relpos;
+
     //! start and end of wave in sample time
     size_t m_tstart, m_tend;
 
@@ -36,11 +39,13 @@ protected:
 
 public:
     //! construct new oscillator
-    Oscillator(float freq, size_t tstart, size_t duration)
-        : m_freq(freq), m_tstart(tstart),
-          m_tend(m_tstart + duration),
+    Oscillator(float freq, size_t relpos, size_t tstart, size_t duration)
+        : m_freq(freq), m_relpos(relpos),
+          m_tstart(tstart), m_tend(m_tstart + duration),
           m_duration(duration)
     { }
+
+    uint32_t relpos() const { return m_relpos; }
 
     // *** Wave Forms
 
@@ -131,13 +136,14 @@ static std::vector<Oscillator> s_osclist;
 static size_t s_pos = 0;
 
 //! add an oscillator to the list (reuse finished ones)
-static void add_oscillator(float freq, size_t p, size_t pstart, size_t duration) {
+static void add_oscillator(float freq, size_t relpos,
+                           size_t p, size_t pstart, size_t duration) {
     // find free oscillator
     size_t oldest = 0, toldest = std::numeric_limits<size_t>::max();
     for (size_t i = 0; i < s_osclist.size(); ++i)
     {
         if (s_osclist[i].is_done(p)) {
-            s_osclist[i] = Oscillator(freq, pstart, duration);
+            s_osclist[i] = Oscillator(freq, relpos, pstart, duration);
             return;
         }
 
@@ -150,12 +156,12 @@ static void add_oscillator(float freq, size_t p, size_t pstart, size_t duration)
     if (s_osclist.size() < s_max_oscillators)
     {
         // add new one
-        s_osclist.push_back(Oscillator(freq, pstart, duration));
+        s_osclist.push_back(Oscillator(freq, relpos, pstart, duration));
     }
     else
     {
         // replace oldest oscillator
-        // s_osclist[oldest] = Oscillator(freq, pstart, duration);
+        // s_osclist[oldest] = Oscillator(freq, relpos, pstart, duration);
     }
 }
 
@@ -205,9 +211,9 @@ void SoundCallback(void* /* udata */, uint8_t* stream, int len) {
     // wraps after 13 million years).
     size_t& p = s_pos;
 
-    // we use 16-bit mono output at 44.1 kHz
+    // we use 16-bit stereo output at 44.1 kHz
     int16_t* data = (int16_t*)stream;
-    size_t size = len / sizeof(int16_t);
+    size_t size = len / (2 * sizeof(int16_t));
 
     // fetch new access list and create oscillators
     {
@@ -222,8 +228,11 @@ void SoundCallback(void* /* udata */, uint8_t* stream, int len) {
         {
             float freq = arrayindex_to_frequency(
                 s_access_list[i] / static_cast<float>(array_max));
+            uint32_t relpos = s_access_list[i];
+            relpos = relpos * 65536 / array_max;
 
-            add_oscillator(freq, p, p + i * pscale,
+            add_oscillator(freq, relpos,
+                           p, p + i * pscale,
                            g_sound_sustain * s_samplerate);
         }
 
@@ -232,55 +241,64 @@ void SoundCallback(void* /* udata */, uint8_t* stream, int len) {
 
     static int64_t volume_factor = 15000;
     int64_t this_maximum = 0.0;
+    static int64_t total_maximum = 0.0;
 
     for (size_t i = 0; i < size; ++i) {
-        int64_t v = 0;
+        int64_t vl = 0, vr = 0;
 
         for (std::vector<Oscillator>::const_iterator it = s_osclist.begin();
              it != s_osclist.end(); ++it)
         {
-            if (!it->is_done(p))
-                v += it->mix_value(p + i) >> 12;
+            if (!it->is_done(p)) {
+                int64_t v = it->mix_value(p + i) >> 12;
+                vl += v * (65536 - it->relpos() - 1) / 65536;
+                vr += v * (it->relpos()) / 65536;
+            }
         }
 
-        v = (v * volume_factor) >> 20;
+        vl = (vl * volume_factor) >> 20;
+        vr = (vr * volume_factor) >> 20;
 
-        this_maximum = std::max(this_maximum, std::abs(v));
+        this_maximum = std::max(this_maximum, std::abs(vl));
+        this_maximum = std::max(this_maximum, std::abs(vr));
 
-        if (v > 30000) {
-            v -= 30000;
-            v /= 2;
-            v += 30000;
-            if (v > 31000) {
-                v -= 31000;
-                v /= 2;
-                v += 31000;
-                if (v > 32760) {
-                    v = 32760;
+        if (std::max(vl, vr) > 30000) {
+            vl -= 30000, vr -= 30000;
+            vl /= 2, vr /= 2;
+            vl += 30000, vr += 30000;
+            if (std::max(vl, vr) > 31000) {
+                vl -= 31000, vr -= 31000;
+                vl /= 2, vr /= 2;
+                vl += 31000, vr += 31000;
+                if (std::max(vl, vr) > 32000) {
+                    vl = std::min(vl, 32000ll), vr = std::min(vr, 32000ll);
                     // std::cout << "clip upper" << std::endl;
                 }
             }
         }
-        if (v < -30000) {
-            v += 30000;
-            v /= 2;
-            v -= 30000;
-            if (v < -31000) {
-                v += 31000;
-                v /= 2;
-                v -= 31000;
-                if (v < -32760) {
-                    v = -32760;
+        if (std::min(vl, vr) < -30000) {
+            vl += 30000, vr += 30000;
+            vl /= 2, vr /= 2;
+            vl -= 30000, vr -= 30000;
+            if (std::min(vl, vr) < -31000) {
+                vl += 31000, vr += 31000;
+                vl /= 2, vr /= 2;
+                vl -= 31000, vr -= 31000;
+                if (std::min(vl, vr) < -32000) {
+                    vl = std::max(vl, -32000ll), vr = std::max(vr, -32000ll);
                     // std::cout << "clip lower" << std::endl;
                 }
             }
         }
 
-        data[i] = v;
+        *data++ = vl, *data++ = vr;
     }
+
+    total_maximum = std::max(total_maximum, this_maximum);
 
     std::cout << "this_maximum " << this_maximum
               << " this_maximum " << this_maximum
+              << " total_maximum " << total_maximum
               << " volume_factor " << volume_factor
               << std::endl;
 

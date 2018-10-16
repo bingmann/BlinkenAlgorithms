@@ -40,7 +40,7 @@ int main() {
     // Set the audio format
     sdlaudiospec.freq = 44100;
     sdlaudiospec.format = AUDIO_S16SYS;
-    sdlaudiospec.channels = 1;          // 1 = mono, 2 = stereo
+    sdlaudiospec.channels = 2;          // 1 = mono, 2 = stereo
     sdlaudiospec.samples = 1024;        // Good low-latency value for callback
     sdlaudiospec.callback = SoundCallback;
     sdlaudiospec.userdata = nullptr;
