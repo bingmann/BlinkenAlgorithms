@@ -22,7 +22,8 @@
 
 using namespace NeoAnimation;
 
-PiSPI_APA102 my_strip("/dev/spidev0.0", /* strip_size */ 5 * 96);
+PiSPI_APA102 my_strip(
+    "/dev/spidev0.0", /* strip_size */ 5 * 96, /* cs_pin */ 24);
 
 bool g_terminate = false;
 

@@ -10,14 +10,13 @@
 #define NEOANIMATION_STRIP_PISPI_APA102_HEADER
 
 #include <NeoAnimation/Color.hpp>
+#include <NeoAnimation/Extra/PiGPIO.hpp>
 #include <NeoAnimation/Strip/LEDStripBase.hpp>
 
 #include <cerrno>
 #include <cstring>
 #include <iostream>
 #include <vector>
-
-#include <fcntl.h>
 
 #include <asm/ioctl.h>
 #include <linux/spi/spidev.h>
@@ -28,7 +27,7 @@ namespace NeoAnimation {
 class PiSPI_APA102 : public LEDStripBase
 {
 public:
-    PiSPI_APA102(std::string path, size_t strip_size)
+    PiSPI_APA102(std::string path, size_t strip_size, int cs_pin = -1)
         : strip_size_(strip_size),
           strip_data_(strip_size) {
 
@@ -54,6 +53,11 @@ public:
         if (ioctl(fd_, SPI_IOC_WR_MAX_SPEED_HZ, &spiSpeed_) < 0) {
             std::cerr << "SPI Speed Change failure: "
                       << strerror(errno) << std::endl;
+        }
+
+        if (cs_pin >= 0) {
+            cs_gpio_.set_pin(cs_pin, /* output */ true);
+            cs_gpio_.write(0);
         }
     }
 
@@ -108,6 +112,9 @@ public:
 
 protected:
     int SPIwrite(unsigned char* data, int len) {
+
+        cs_gpio_.write(1);
+
         struct spi_ioc_transfer spi;
         memset(&spi, 0, sizeof(spi));
 
@@ -118,7 +125,11 @@ protected:
         spi.speed_hz = spiSpeed_;
         spi.bits_per_word = 8;
 
-        return ioctl(fd_, SPI_IOC_MESSAGE(1), &spi);
+        int x = ioctl(fd_, SPI_IOC_MESSAGE(1), &spi);
+
+        cs_gpio_.write(1);
+
+        return x;
     }
 
 private:
@@ -128,11 +139,14 @@ private:
     //! device file descriptor
     int fd_;
 
-    //! strip color data
-    std::vector<APAColor> strip_data_;
-
     //! SPI speed
     size_t spiSpeed_;
+
+    //! GPIO CS Pin for SPI multiplex
+    GPIOPin cs_gpio_;
+
+    //! strip color data
+    std::vector<APAColor> strip_data_;
 };
 
 } // namespace NeoAnimation
