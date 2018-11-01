@@ -174,7 +174,7 @@ static std::mutex s_mutex_access_list;
 #endif
 
 //! "public" function to add a new array access
-static void SoundAccess(size_t i) {
+static void OnSoundAccess(size_t i) {
     if (!g_sound_on) return;
 
 #if !TEENSYDUINO
@@ -296,11 +296,11 @@ void SoundCallback(void* /* udata */, uint8_t* stream, int len) {
 
     total_maximum = std::max(total_maximum, this_maximum);
 
-    std::cout << "this_maximum " << this_maximum
-              << " this_maximum " << this_maximum
-              << " total_maximum " << total_maximum
-              << " volume_factor " << volume_factor
-              << std::endl;
+    // std::cout << "this_maximum " << this_maximum
+    //           << " this_maximum " << this_maximum
+    //           << " total_maximum " << total_maximum
+    //           << " volume_factor " << volume_factor
+    //           << std::endl;
 
     // if (this_maximum < 25000) {
     //     volume_factor = volume_factor * 101 / 100;

@@ -25,77 +25,86 @@ void RunRandomAlgorithmAnimation(LEDStrip& strip) {
         using namespace NeoHashTable;
         using namespace NeoLawaSAT;
 
+#define TRunSort(A, T) \
+    RunSort(strip, #A, A, T)
+#define DRunSort(A) \
+    RunSort(strip, #A, A)
+
         size_t a = random(22);
         switch (a) {
         case 0:
-            RunSort(strip, SelectionSort, -10);
+            TRunSort(SelectionSort, -10);
             break;
         case 1:
-            RunSort(strip, InsertionSort, -3);
+            TRunSort(InsertionSort, -3);
             break;
         case 2:
-            RunSort(strip, BubbleSort, -8);
+            TRunSort(BubbleSort, -8);
             break;
         case 3:
-            RunSort(strip, CocktailShakerSort, -8);
+            TRunSort(CocktailShakerSort, -8);
             break;
         case 4:
-            RunSort(strip, QuickSortLR);
+            TRunSort(QuickSortLR, 500);
             break;
         case 5:
-            RunSort(strip, QuickSortDualPivot);
+            TRunSort(QuickSortDualPivot, 2000);
             break;
         case 6:
-            RunSort(strip, MergeSort);
+            TRunSort(MergeSort, 8000);
             break;
         case 7:
-            RunSort(strip, ShellSort);
+            TRunSort(ShellSort, 800);
             break;
         case 8:
-            RunSort(strip, HeapSort);
+            TRunSort(HeapSort, 100);
             break;
         case 9:
-            RunSort(strip, CycleSort);
+            TRunSort(CycleSort, -30);
             break;
         case 10:
-            RunSort(strip, RadixSortMSD);
+            TRunSort(RadixSortMSD, 1000);
             break;
         case 11:
-            RunSort(strip, RadixSortLSD);
+            TRunSort(RadixSortLSD, 18000);
             break;
         case 12:
-            RunSort(strip, StdSort);
+            TRunSort(StdSort, 1000);
             break;
         case 13:
-            RunSort(strip, StdStableSort);
+            TRunSort(StdStableSort, 2000);
             break;
         case 14:
-            RunSort(strip, WikiSort);
+            TRunSort(WikiSort, 50);
             break;
         case 15:
-            RunSort(strip, TimSort);
+            TRunSort(TimSort, 2000);
             break;
         case 16:
-            RunSort(strip, BozoSort);
+            DRunSort(BozoSort);
             break;
+
+#define TRunHash(A, T) \
+    RunHash(strip, #A, A, T)
 
         case 17:
-            RunHash(strip, LinearProbingHT);
+            TRunHash(LinearProbingHT, 1200);
             break;
         case 18:
-            RunHash(strip, QuadraticProbingHT);
+            TRunHash(QuadraticProbingHT, 5000);
             break;
         case 19:
-            RunHash(strip, CuckooHashingTwo);
+            TRunHash(CuckooHashingTwo, 5000);
             break;
         case 20:
-            RunHash(strip, CuckooHashingThree);
+            TRunHash(CuckooHashingThree, 5000);
             break;
 
-        case 21:
-            RunLawaSAT(strip);
-            break;
+            // case 21:
+            //     RunLawaSAT(strip);
+            //     break;
         }
+#undef DRunSort
     }
 }
 

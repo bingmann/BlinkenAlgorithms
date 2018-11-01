@@ -14,6 +14,9 @@
 #include <NeoAnimation/Animation/RandomAlgorithm.hpp>
 #include <NeoAnimation/Strip/PiSPI_APA102.hpp>
 
+#include <NeoAnimation/Extra/Font5x5.hpp>
+#include <NeoAnimation/Extra/MAX7219.hpp>
+
 /******************************************************************************/
 
 #include <NeoAnimation/Animation/SortSound.hpp>
@@ -26,6 +29,28 @@ PiSPI_APA102 my_strip(
     "/dev/spidev0.0", /* strip_size */ 5 * 96, /* cs_pin */ 24);
 
 bool g_terminate = false;
+
+MAX7219 led_matrix("/dev/spidev0.0", /* cs_pin */ 23);
+Font5x5 mfont;
+
+const char* s_algo_name = "";
+char s_algo_stats[64];
+
+void OnComparisonCount(size_t count) {
+    snprintf(s_algo_stats, sizeof(s_algo_stats), "%zu", count);
+}
+
+void OnAlgorithmName(const char* name) {
+    s_algo_name = name;
+    OnComparisonCount(0);
+}
+
+void OnDelay() {
+    led_matrix.clear();
+    mfont.print(s_algo_name, led_matrix);
+    mfont.print_right(s_algo_stats, led_matrix);
+    led_matrix.show();
+}
 
 int main() {
     srandom(time(nullptr));
@@ -56,8 +81,11 @@ int main() {
 
     array_max = my_strip.size();
 
-    // enable sound hook.
-    NeoSort::SoundAccess = SoundAccess;
+    // enable hooks
+    NeoSort::SoundAccessHook = OnSoundAccess;
+    NeoSort::DelayHook = OnDelay;
+    NeoSort::ComparisonCountHook = OnComparisonCount;
+    NeoSort::AlgorithmNameHook = OnAlgorithmName;
 
     RunRandomAlgorithmAnimation(my_strip);
 

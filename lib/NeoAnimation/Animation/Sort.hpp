@@ -40,33 +40,31 @@ public:
 public:
     Item() { }
 
-    explicit Item(const value_type& d) : value_(d) { OnChange(this); }
+    explicit Item(const value_type& d) : value_(d) { OnAccess(this); }
 
-    Item(const Item& v) : value_(v.value_) { OnChange(this); }
+    Item(const Item& v) : value_(v.value_) { OnAccess(this); }
 
     Item& operator = (const Item& a) {
         value_ = a.value_;
-        OnChange(this);
+        OnAccess(this);
         return *this;
     }
 
-    static void OnChange(const Item* a, bool with_delay = true);
-
     //! Returns value_
     value_type value() const {
-        OnChange(this, /* with_delay */ true);
+        OnAccess(this, /* with_delay */ true);
         return value_;
     }
 
     Item& operator ++ (int) {
         value_++;
-        OnChange(this);
+        OnAccess(this);
         return *this;
     }
 
     Item& operator -- (int) {
         value_--;
-        OnChange(this);
+        OnAccess(this);
         return *this;
     }
 
@@ -74,13 +72,13 @@ public:
 
     Item& SetNoDelay(const value_type& d) {
         value_ = d;
-        OnChange(this, /* with_delay */ false);
+        OnAccess(this, /* with_delay */ false);
         return *this;
     }
 
     Item& SetNoDelay(const Item& a) {
         value_ = a.value_;
-        OnChange(this, /* with_delay */ false);
+        OnAccess(this, /* with_delay */ false);
         return *this;
     }
 
@@ -137,32 +135,41 @@ public:
 
     bool greater_direct(const Item& v) const { return (value_ > v.value_); }
 
+    // *** access and comparison collectors
+
+    static void OnAccess(const Item* a, bool with_delay = true);
     static void OnComparison(const Item&, const Item&);
 };
 
 class SortAnimationBase
 {
 public:
-    virtual void OnChange(const Item* a, bool with_delay) = 0;
+    virtual void OnAccess(const Item* a, bool with_delay) = 0;
+    virtual void OnComparison(const Item* a, const Item* b) = 0;
 };
 
 static SortAnimationBase* sort_animation_hook = nullptr;
 
-static void (* SoundAccess)(size_t i) = nullptr;
+// callbacks
+static void (* SoundAccessHook)(size_t i) = nullptr;
+static void (* DelayHook)() = nullptr;
+static void (* AlgorithmNameHook)(const char* name) = nullptr;
+static void (* ComparisonCountHook)(size_t count) = nullptr;
 
-void Item::OnChange(const Item* a, bool with_delay) {
+void Item::OnAccess(const Item* a, bool with_delay) {
     if (sort_animation_hook)
-        sort_animation_hook->OnChange(a, with_delay);
-    if (SoundAccess)
-        SoundAccess(a->value_);
+        sort_animation_hook->OnAccess(a, with_delay);
+    if (SoundAccessHook)
+        SoundAccessHook(a->value_);
 }
 
 void Item::OnComparison(const Item& a, const Item& b) {
-    OnChange(&a);
-    OnChange(&b);
-    if (SoundAccess) {
-        SoundAccess(a.value_);
-        SoundAccess(b.value_);
+    if (sort_animation_hook) {
+        sort_animation_hook->OnComparison(&a, &b);
+    }
+    if (SoundAccessHook) {
+        SoundAccessHook(a.value_);
+        SoundAccessHook(b.value_);
     }
 }
 
@@ -757,15 +764,33 @@ public:
     unsigned intensity_high = 255;
     unsigned intensity_low = 64;
 
-    void OnChange(const Item* a, bool with_delay) override {
+    void OnAccess(const Item* a, bool with_delay) override {
         if (a < A.data() || a >= A.data() + array_size)
             return;
         flash(a - A.data(), with_delay);
     }
 
+    size_t num_comparisons = 0;
+
+    void OnComparison(const Item* a, const Item* b) override {
+        ++num_comparisons;
+        if (ComparisonCountHook) {
+            ComparisonCountHook(num_comparisons);
+        }
+        if (a >= A.data() && a < A.data() + array_size &&
+            b >= A.data() && b < A.data() + array_size)
+            flash(a - A.data(), b - A.data(), /* with_delay */ true);
+        else if (a >= A.data() && a < A.data() + array_size)
+            flash(a - A.data(), /* with_delay */ false);
+        else if (b >= A.data() && b < A.data() + array_size)
+            flash(b - A.data(), /* with_delay */ true);
+    }
+
     void yield_delay() {
         if (delay_time_ > 0)
             delay_micros(delay_time_);
+        if (DelayHook)
+            DelayHook();
     }
 
     uint16_t value_to_hue(size_t i) { return i * HSV_HUE_MAX / array_size; }
@@ -793,6 +818,28 @@ public:
     size_t frame_buffer_pos = 0;
     size_t frame_drop = 0;
 
+    void flash_low_buffer(size_t i) {
+        frame_buffer[frame_buffer_pos] = i;
+
+        if (frame_buffer_pos == 0) {
+            if (!strip_.busy()) {
+                strip_.show();
+            }
+
+            // reset pixels in this frame_buffer_pos
+            for (size_t k = 0; k < frame_drop; ++k) {
+                if (frame_buffer[k] < array_size)
+                    flash_low(frame_buffer[k]);
+            }
+
+            frame_buffer_pos = frame_drop - 1;
+            yield_delay();
+        }
+        else {
+            --frame_buffer_pos;
+        }
+    }
+
     void flash(size_t i, bool with_delay = true) {
         if (!with_delay)
             return flash_low(i);
@@ -809,25 +856,28 @@ public:
         }
         else {
             flash_high(i);
-            frame_buffer[frame_buffer_pos] = i;
+            flash_low_buffer(i);
+        }
+    }
 
-            if (frame_buffer_pos == 0) {
-                if (!strip_.busy()) {
-                    strip_.show();
-                }
+    void flash(size_t i, size_t j, bool with_delay = true) {
+        if (!with_delay)
+            return flash_low(i), flash_low(j);
 
-                // reset pixels in this frame_buffer_pos
-                for (size_t j = 0; j < frame_drop; ++j) {
-                    if (frame_buffer[j] < array_size)
-                        flash_low(frame_buffer[j]);
-                }
+        if (frame_drop == 0) {
+            flash_high(i), flash_high(j);
 
-                frame_buffer_pos = frame_drop - 1;
-                yield_delay();
-            }
-            else {
-                --frame_buffer_pos;
-            }
+            if (!strip_.busy())
+                strip_.show();
+
+            yield_delay();
+
+            flash_low(j), flash_low(i);
+        }
+        else {
+            flash_high(i), flash_high(j);
+
+            flash_low_buffer(j), flash_low_buffer(i);
         }
     }
 
@@ -852,9 +902,12 @@ protected:
 };
 
 template <typename LEDStrip>
-void RunSort(LEDStrip& strip, void (*sort_function)(), int32_t delay_time = 10000) {
+void RunSort(LEDStrip& strip, const char* algo_name,
+             void (*sort_function)(), int32_t delay_time = 10000) {
     uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
+    if (AlgorithmNameHook)
+        AlgorithmNameHook(algo_name);
     ani.array_randomize();
     sort_function();
     printf("Running time: %.2f\n", (millis() - ts) / 1000.0);
@@ -866,23 +919,28 @@ void RunSort(LEDStrip& strip, void (*sort_function)(), int32_t delay_time = 1000
 
 template <typename LEDStrip>
 void RunAllSortAnimation(LEDStrip& strip) {
-    RunSort(strip, SelectionSort);
-    RunSort(strip, InsertionSort);
-    RunSort(strip, BubbleSort);
-    RunSort(strip, CocktailShakerSort);
-    RunSort(strip, QuickSortLR);
-    RunSort(strip, QuickSortDualPivot);
-    RunSort(strip, MergeSort);
-    RunSort(strip, ShellSort);
-    RunSort(strip, HeapSort);
-    RunSort(strip, CycleSort);
-    RunSort(strip, RadixSortMSD);
-    RunSort(strip, RadixSortLSD);
-    RunSort(strip, StdSort);
-    RunSort(strip, StdStableSort);
-    RunSort(strip, WikiSort);
-    RunSort(strip, TimSort);
-    RunSort(strip, BozoSort);
+#define DRunSort(A) \
+    RunSort(strip, #A, A)
+
+    DRunSort(SelectionSort);
+    DRunSort(InsertionSort);
+    DRunSort(BubbleSort);
+    DRunSort(CocktailShakerSort);
+    DRunSort(QuickSortLR);
+    DRunSort(QuickSortDualPivot);
+    DRunSort(MergeSort);
+    DRunSort(ShellSort);
+    DRunSort(HeapSort);
+    DRunSort(CycleSort);
+    DRunSort(RadixSortMSD);
+    DRunSort(RadixSortLSD);
+    DRunSort(StdSort);
+    DRunSort(StdStableSort);
+    DRunSort(WikiSort);
+    DRunSort(TimSort);
+    DRunSort(BozoSort);
+
+#undef DRunSort
 }
 
 } // namespace NeoSort
