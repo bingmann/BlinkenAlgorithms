@@ -578,6 +578,69 @@ public:
     }
 };
 
+template <typename LEDStrip>
+class Starlight
+{
+public:
+    Starlight(LEDStrip& strip) {
+        strip_size = strip.size();
+
+        for (size_t i = 0; i < max_blinks; ++i) {
+            blinks[i] = strip_size;
+        }
+    }
+
+    uint32_t operator () (LEDStrip& strip, uint32_t s) {
+        unsigned intensity = strip.intensity();
+
+        // Color w = Color(32, 0, 0, 100);
+        Color w = Color(0, 0, 0, intensity);
+        // Color w = Color(0, 0, 0, 2);
+
+        for (size_t i = 0; i < strip_size; ++i)
+            strip.setPixel(i, w);
+
+        if (rng() % 128 < 16 && 0) {
+            // add new blink
+            for (size_t i = 0; i < max_blinks; ++i) {
+                if (blinks[i] >= strip_size) {
+                    blinks[i] = rng() % strip_size;
+                    blinks_age[i] = 0;
+                    break;
+                }
+            }
+        }
+
+        for (size_t i = 0; i < max_blinks; ++i) {
+            if (blinks[i] >= strip_size)
+                continue;
+
+            if (dist(rng) * 100 < blinks_age[i]) {
+                size_t v = ldist(rng) * 10;
+                strip.setPixel(blinks[i], v);
+            }
+
+            blinks_age[i]++;
+            if (blinks_age[i] > 200)
+                blinks[i] = strip_size;
+        }
+
+        return 50000;
+    }
+
+protected:
+    static const size_t max_blinks = 8;
+    size_t strip_size;
+
+    std::default_random_engine rng { 12345 };
+    std::normal_distribution<float> dist { 1.0, 1.0 };
+    std::lognormal_distribution<float> ldist { 0.0, 0.5 };
+
+    size_t blinks[max_blinks];
+    size_t blinks_age[max_blinks];
+    size_t blinks_hue[max_blinks];
+};
+
 } // namespace NeoAnimation
 
 #endif // !NEOANIMATION_ANIMATION_FLUX_HEADER

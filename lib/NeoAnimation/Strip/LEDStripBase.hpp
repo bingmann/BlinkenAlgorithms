@@ -17,9 +17,16 @@ namespace NeoAnimation {
 class LEDStripBase
 {
 public:
-    uint8_t intensity() {
-        return 255;
+    uint8_t intensity() const {
+        return intensity_;
     }
+
+    void set_intensity(uint8_t intensity) {
+        intensity_ = intensity;
+    }
+
+protected:
+    uint8_t intensity_ = 255;
 };
 
 /******************************************************************************/
