@@ -13,6 +13,7 @@
 #include <cstdint>
 
 extern bool g_terminate;
+extern void delay_poll();
 
 namespace NeoAnimation {
 
@@ -47,6 +48,8 @@ void RunAnimation(LEDStrip& strip1,
 
         if (g_terminate)
             break;
+
+        delay_poll();
     }
 }
 
@@ -111,6 +114,8 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
 
         if (g_terminate)
             break;
+
+        delay_poll();
     }
 }
 
@@ -195,6 +200,8 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
 
         if (g_terminate)
             break;
+
+        delay_poll();
     }
 }
 

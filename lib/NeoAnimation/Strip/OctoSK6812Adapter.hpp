@@ -37,11 +37,11 @@ template <typename OctoSK6812>
 class OctoSK6812Adapter : public LEDStripBase
 {
 public:
-    explicit OctoSK6812Adapter(OctoSK6812& strip)
-        : LEDStripBase(), strip_(strip) { }
+    explicit OctoSK6812Adapter(OctoSK6812& strip, size_t active_parts = 8)
+        : LEDStripBase(), strip_(strip), active_parts_(active_parts) { }
 
     size_t size() const {
-        return strip_.numPixels();
+        return strip_.numPixels() * active_parts_ / 8;
     }
 
     void show() const {
@@ -64,6 +64,8 @@ public:
 
 private:
     OctoSK6812& strip_;
+
+    size_t active_parts_;
 
     std::vector<uint8_t> gamma8 = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
