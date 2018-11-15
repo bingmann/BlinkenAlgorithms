@@ -12,6 +12,9 @@
 #include <NeoAnimation/Color.hpp>
 #include <NeoAnimation/Control.hpp>
 
+#include <cmath>
+#include <random>
+
 namespace NeoAnimation {
 
 template <typename LEDStrip>

@@ -161,6 +161,7 @@ static void add_oscillator(float freq, size_t relpos,
     else
     {
         // replace oldest oscillator
+        (void)oldest;
         // s_osclist[oldest] = Oscillator(freq, relpos, pstart, duration);
     }
 }
@@ -271,7 +272,8 @@ void SoundCallback(void* /* udata */, uint8_t* stream, int len) {
                 vl /= 2, vr /= 2;
                 vl += 31000, vr += 31000;
                 if (std::max(vl, vr) > 32000) {
-                    vl = std::min(vl, 32000ll), vr = std::min(vr, 32000ll);
+                    vl = std::min<int64_t>(vl, 32000ll);
+                    vr = std::min<int64_t>(vr, 32000ll);
                     // std::cout << "clip upper" << std::endl;
                 }
             }
@@ -285,7 +287,8 @@ void SoundCallback(void* /* udata */, uint8_t* stream, int len) {
                 vl /= 2, vr /= 2;
                 vl -= 31000, vr -= 31000;
                 if (std::min(vl, vr) < -32000) {
-                    vl = std::max(vl, -32000ll), vr = std::max(vr, -32000ll);
+                    vl = std::max<int64_t>(vl, -32000ll);
+                    vr = std::max<int64_t>(vr, -32000ll);
                     // std::cout << "clip lower" << std::endl;
                 }
             }

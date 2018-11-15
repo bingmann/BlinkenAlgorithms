@@ -51,6 +51,8 @@ NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> strip(/* strip_size */ 3
 
 bool g_terminate = false;
 
+void delay_poll() { }
+
 void setup() {
     Serial.begin(115200);
 

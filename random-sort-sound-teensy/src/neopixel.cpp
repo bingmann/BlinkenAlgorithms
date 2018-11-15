@@ -79,7 +79,7 @@ void setup() {
 
     // enable sorting sound output
     array_max = my_strip.size();
-    NeoSort::SoundAccess = SoundAccess;
+    // NeoSort::SoundAccessHook = SoundAccess;
 }
 
 using namespace NeoAnimation;
