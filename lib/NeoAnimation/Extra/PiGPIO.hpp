@@ -110,18 +110,30 @@ protected:
         char path[48];
 
         snprintf(path, sizeof(path), "/sys/class/gpio/gpio%d/direction", pin);
-        int fd = open(path, O_WRONLY);
-        if (fd < 0) {
-            fprintf(stderr, "Failed to open gpio direction for writing!\n");
-            return false;
-        }
 
-        if (::write(fd, s_directions_str[output], output ? 4 : 3) < 0) {
-            fprintf(stderr, "Failed to set direction!\n");
-            return false;
-        }
+        for (size_t r = 0; ; ++r) {
+            int fd = open(path, O_WRONLY);
+            if (fd < 0) {
+                if (r >= 50) {
+                    fprintf(stderr, "Failed to open gpio direction for writing!\n");
+                    return false;
+                }
+                usleep(5000);
+                continue;
+            }
 
-        close(fd);
+            if (::write(fd, s_directions_str[output], output ? 4 : 3) < 0) {
+                if (r >= 50) {
+                    fprintf(stderr, "Failed to set direction!\n");
+                    return false;
+                }
+                usleep(5000);
+                continue;
+            }
+
+            close(fd);
+            break;
+        }
 
         // open value fd
         snprintf(path, sizeof(path), "/sys/class/gpio/gpio%d/value", pin);
