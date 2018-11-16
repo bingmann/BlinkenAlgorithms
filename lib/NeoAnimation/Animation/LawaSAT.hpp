@@ -31,8 +31,8 @@ class Lawa
 private:
     int numVariables;
     int numClauses;
-    Item* tValues = A.data() - 1;
-    Item* satLits = A.data() + 80;
+    Item* tValues = array.data() - 1;
+    Item* satLits = array.data() + 80;
 
     struct Clause {
         int numLits;
@@ -262,28 +262,28 @@ public:
     unsigned intensity_low = 64;
 
     void OnChange(const Item* a, bool with_delay) override {
-        if (a < A.data() || a >= A.data() + array_size)
+        if (a < array.data() || a >= array.data() + array_size)
             return;
-        flash(a - A.data(), with_delay);
+        flash(a - array.data(), with_delay);
     }
 
     void flash_low(size_t i) {
         if (i < 80) {
             // variables: >= black are negative values.
-            if (A[i].value_ >= unsigned_negative)
+            if (array[i].value_ >= unsigned_negative)
                 strip_.setPixel(i, Color(0));
             else
                 strip_.setPixel(i, Color(intensity_low));
         }
         else {
             // clauses
-            if (A[i].value_ == 0) {
+            if (array[i].value_ == 0) {
                 strip_.setPixel(i, Color(255, 0, 0));
             }
-            // else if (A[i].value_ == 1) {
+            // else if (array[i].value_ == 1) {
             //     strip_.setPixel(i, Color(96, 96, 0));
             // }
-            // else if (A[i].value_ == 2) {
+            // else if (array[i].value_ == 2) {
             //     strip_.setPixel(i, Color(0, 128, 0));
             // }
             else {

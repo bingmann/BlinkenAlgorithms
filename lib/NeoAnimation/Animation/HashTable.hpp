@@ -33,17 +33,17 @@ uint32_t hash(uint32_t a) {
     return a;
 }
 
-void LinearProbingHT() {
+void LinearProbingHT(Item* A, size_t n) {
 
-    size_t cshift = random(array_size);
+    size_t cshift = random(n);
 
-    for (size_t i = 0; i < array_size; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         // pick a new item to insert
-        Item v = Item((i + cshift) % array_size);
+        Item v = Item((i + cshift) % n);
 
-        size_t idx = (hash(v.value()) >> 2) % array_size;
+        size_t idx = (hash(v.value()) >> 2) % n;
         while (A[idx].value() != black) {
-            idx = (idx + 1) % array_size;
+            idx = (idx + 1) % n;
         }
         A[idx] = v;
 
@@ -54,20 +54,20 @@ void LinearProbingHT() {
 /******************************************************************************/
 // Hashing with Quadratic Probing
 
-void QuadraticProbingHT() {
+void QuadraticProbingHT(Item* A, size_t n) {
 
-    size_t cshift = random(array_size);
+    size_t cshift = random(n);
 
-    for (size_t i = 0; i < array_size; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         // pick a new item to insert
-        Item v = Item((i + cshift) % array_size);
+        Item v = Item((i + cshift) % n);
 
-        size_t idx = (hash(v.value()) >> 2) % array_size;
+        size_t idx = (hash(v.value()) >> 2) % n;
         size_t p = 0;
         while (A[idx].value() != black) {
-            idx = (idx + (p + p * p) / 2) % array_size;
+            idx = (idx + (p + p * p) / 2) % n;
             ++p;
-            if (p == array_size) {
+            if (p == n) {
                 // cycled. stop hashing.
                 return;
             }
@@ -79,29 +79,29 @@ void QuadraticProbingHT() {
 /******************************************************************************/
 // Cuckoo Hashing with Two Choices
 
-uint32_t hash2(int f, uint32_t a) {
+uint32_t hash2(int f, uint32_t a, size_t n) {
     if (f == 0)
-        return (hash(a) >> 2) % array_size;
+        return (hash(a) >> 2) % n;
     if (f == 1)
-        return (hash(a) >> 15) % array_size;
+        return (hash(a) >> 15) % n;
     return 0;
 }
 
-void CuckooHashingTwo() {
+void CuckooHashingTwo(Item* A, size_t n) {
 
-    size_t cshift = random(array_size);
+    size_t cshift = random(n);
 
-    for (size_t i = 0; i < array_size; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         // pick a new item to insert
-        Item v = Item((i + cshift) % array_size);
+        Item v = Item((i + cshift) % n);
 
-        uint32_t pos = hash2(0, v.value());
+        uint32_t pos = hash2(0, v.value(), n);
         if (A[pos].value() == black) {
             A[pos] = v;
             continue;
         }
 
-        pos = hash2(1, v.value());
+        pos = hash2(1, v.value(), n);
         if (A[pos].value() == black) {
             A[pos] = v;
             continue;
@@ -110,15 +110,15 @@ void CuckooHashingTwo() {
         size_t r = 0;
         int hashfunction = 1;
         while (true) {
-            pos = hash2(hashfunction, v.value());
+            pos = hash2(hashfunction, v.value(), n);
             swap(v, A[pos]);
             if (v.value() == black)
                 break;
 
-            if (hash2(hashfunction, v.value()) == pos)
+            if (hash2(hashfunction, v.value(), n) == pos)
                 hashfunction = (hashfunction + 1) % 2;
 
-            if (++r >= array_size)
+            if (++r >= n)
                 return;
         }
     }
@@ -127,37 +127,37 @@ void CuckooHashingTwo() {
 /******************************************************************************/
 // Cuckoo Hashing with Three Choices
 
-uint32_t hash3(int f, uint32_t a) {
+uint32_t hash3(int f, uint32_t a, size_t n) {
     if (f == 0)
-        return (hash(a) >> 2) % array_size;
+        return (hash(a) >> 2) % n;
     if (f == 1)
-        return (hash(a) >> 7) % array_size;
+        return (hash(a) >> 7) % n;
     if (f == 2)
-        return (hash(a) >> 15) % array_size;
+        return (hash(a) >> 15) % n;
     return 0;
 }
 
-void CuckooHashingThree() {
+void CuckooHashingThree(Item* A, size_t n) {
 
-    size_t cshift = random(array_size);
+    size_t cshift = random(n);
 
-    for (size_t i = 0; i < array_size; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         // pick a new item to insert
-        Item v = Item((i + cshift) % array_size);
+        Item v = Item((i + cshift) % n);
 
-        uint32_t pos = hash3(0, v.value());
+        uint32_t pos = hash3(0, v.value(), n);
         if (A[pos].value() == black) {
             A[pos] = v;
             continue;
         }
 
-        pos = hash3(1, v.value());
+        pos = hash3(1, v.value(), n);
         if (A[pos].value() == black) {
             A[pos] = v;
             continue;
         }
 
-        pos = hash3(2, v.value());
+        pos = hash3(2, v.value(), n);
         if (A[pos].value() == black) {
             A[pos] = v;
             continue;
@@ -165,21 +165,21 @@ void CuckooHashingThree() {
 
         // all three places full, pick a random one to displace
         int hashfunction = random(3);
-        pos = hash3(hashfunction, v.value());
+        pos = hash3(hashfunction, v.value(), n);
         swap(v, A[pos]);
 
         size_t r = 0;
         while (true) {
             hashfunction = random(2);
-            if (hash3(hashfunction, v.value()) == pos)
+            if (hash3(hashfunction, v.value(), n) == pos)
                 hashfunction = 2;
 
-            pos = hash3(hashfunction, v.value());
+            pos = hash3(hashfunction, v.value(), n);
             swap(v, A[pos]);
             if (v.value() == black)
                 break;
 
-            if (++r >= array_size)
+            if (++r >= n)
                 return;
         }
     }
@@ -189,13 +189,13 @@ void CuckooHashingThree() {
 
 template <typename LEDStrip>
 void RunHash(LEDStrip& strip, const char* algo_name,
-             void (*hash_function)(), int32_t delay_time = 10000) {
+             void (*hash_function)(Item* A, size_t n), int32_t delay_time = 10000) {
     uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
         AlgorithmNameHook(algo_name);
     ani.array_black();
-    hash_function();
+    hash_function(array.data(), array.size());
     printf("Running time: %.2f\n", (millis() - ts) / 1000.0);
 }
 

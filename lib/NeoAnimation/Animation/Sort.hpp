@@ -177,23 +177,21 @@ void Item::OnComparison(const Item& a, const Item& b) {
 // Sorting Algorithms
 
 size_t array_size;
-std::vector<Item> A;
+std::vector<Item> array;
 
 using std::swap;
 
 /******************************************************************************/
 // Selection Sort
 
-void SelectionSort() {
-    for (size_t i = 0; i < array_size - 1; ++i) {
+void SelectionSort(Item* A, size_t n) {
+    for (size_t i = 0; i < n - 1; ++i) {
         size_t j_min = i;
-
-        for (size_t j = i + 1; j < array_size; ++j) {
+        for (size_t j = i + 1; j < n; ++j) {
             if (A[j] < A[j_min]) {
                 j_min = j;
             }
         }
-
         swap(A[i], A[j_min]);
     }
 }
@@ -201,8 +199,8 @@ void SelectionSort() {
 /******************************************************************************/
 // Insertion Sort
 
-void InsertionSort() {
-    for (size_t i = 1; i < array_size; ++i) {
+void InsertionSort(Item* A, size_t n) {
+    for (size_t i = 1; i < n; ++i) {
         Item key = A[i];
 
         ssize_t j = i - 1;
@@ -216,9 +214,9 @@ void InsertionSort() {
 /******************************************************************************/
 // Bubble Sort
 
-void BubbleSort() {
-    for (size_t i = 0; i < array_size - 1; ++i) {
-        for (size_t j = 0; j < array_size - 1 - i; ++j) {
+void BubbleSort(Item* A, size_t n) {
+    for (size_t i = 0; i < n - 1; ++i) {
+        for (size_t j = 0; j < n - 1 - i; ++j) {
             if (A[j] > A[j + 1]) {
                 swap(A[j], A[j + 1]);
             }
@@ -229,8 +227,8 @@ void BubbleSort() {
 /******************************************************************************/
 // Cocktail Shaker Sort
 
-void CocktailShakerSort() {
-    size_t lo = 0, hi = array_size - 1, mov = lo;
+void CocktailShakerSort(Item* A, size_t n) {
+    size_t lo = 0, hi = n - 1, mov = lo;
 
     while (lo < hi) {
         for (size_t i = hi; i > lo; --i) {
@@ -268,7 +266,7 @@ enum QuickSortPivotType {
 QuickSortPivotType g_quicksort_pivot = PIVOT_FIRST;
 
 // pivot selection method
-ssize_t QuickSortSelectPivot(ssize_t lo, ssize_t hi) {
+ssize_t QuickSortSelectPivot(Item* A, ssize_t lo, ssize_t hi) {
     if (g_quicksort_pivot == PIVOT_FIRST)
         return lo;
 
@@ -304,8 +302,8 @@ ssize_t QuickSortSelectPivot(ssize_t lo, ssize_t hi) {
 /******************************************************************************/
 // Quick Sort LR (pointers left and right, Hoare's partition schema)
 
-void QuickSortLR(ssize_t lo, ssize_t hi) {
-    ssize_t p = QuickSortSelectPivot(lo, hi + 1);
+void QuickSortLR(Item* A, ssize_t lo, ssize_t hi) {
+    ssize_t p = QuickSortSelectPivot(A, lo, hi + 1);
 
     ssize_t i = lo, j = hi;
 
@@ -328,23 +326,23 @@ void QuickSortLR(ssize_t lo, ssize_t hi) {
     }
 
     if (lo < j)
-        QuickSortLR(lo, j);
+        QuickSortLR(A, lo, j);
     if (i < hi)
-        QuickSortLR(i, hi);
+        QuickSortLR(A, i, hi);
 }
 
-void QuickSortLR() {
+void QuickSortLR(Item* A, size_t n) {
     g_quicksort_pivot = (QuickSortPivotType)random(PIVOT_SIZE);
-    QuickSortLR(0, array_size - 1);
+    QuickSortLR(A, 0, n - 1);
 }
 
 /******************************************************************************/
 // Quick Sort LL (Lomuto partition scheme, two pointers at left, pivot is moved
 // to the right) (code by Timo Bingmann, based on CLRS' 3rd edition)
 
-size_t PartitionLL(size_t lo, size_t hi) {
+size_t PartitionLL(Item* A, size_t lo, size_t hi) {
     // pick pivot and move to back
-    size_t p = QuickSortSelectPivot(lo, hi);
+    size_t p = QuickSortSelectPivot(A, lo, hi);
 
     Item& pivot = A[p];
     swap(A[p], A[hi - 1]);
@@ -363,24 +361,24 @@ size_t PartitionLL(size_t lo, size_t hi) {
     return i;
 }
 
-void QuickSortLL(size_t lo, size_t hi) {
+void QuickSortLL(Item* A, size_t lo, size_t hi) {
     if (lo + 1 < hi) {
-        size_t mid = PartitionLL(lo, hi);
+        size_t mid = PartitionLL(A, lo, hi);
 
-        QuickSortLL(lo, mid);
-        QuickSortLL(mid + 1, hi);
+        QuickSortLL(A, lo, mid);
+        QuickSortLL(A, mid + 1, hi);
     }
 }
 
-void QuickSortLL() {
+void QuickSortLL(Item* A, size_t n) {
     g_quicksort_pivot = (QuickSortPivotType)random(PIVOT_SIZE);
-    QuickSortLL(0, array_size);
+    QuickSortLL(A, 0, n);
 }
 
 /******************************************************************************/
 // Dual-Pivot Quick Sort (code by Yaroslavskiy via Sebastian Wild)
 
-void QuickSortDualPivotYaroslavskiy(int left, int right) {
+void QuickSortDualPivotYaroslavskiy(Item* A, int left, int right) {
     if (right > left) {
         if (A[left] > A[right]) {
             swap(A[left], A[right]);
@@ -416,20 +414,20 @@ void QuickSortDualPivotYaroslavskiy(int left, int right) {
         swap(A[left], A[l]);
         swap(A[right], A[g]);
 
-        QuickSortDualPivotYaroslavskiy(left, l - 1);
-        QuickSortDualPivotYaroslavskiy(l + 1, g - 1);
-        QuickSortDualPivotYaroslavskiy(g + 1, right);
+        QuickSortDualPivotYaroslavskiy(A, left, l - 1);
+        QuickSortDualPivotYaroslavskiy(A, l + 1, g - 1);
+        QuickSortDualPivotYaroslavskiy(A, g + 1, right);
     }
 }
 
-void QuickSortDualPivot() {
-    return QuickSortDualPivotYaroslavskiy(0, array_size - 1);
+void QuickSortDualPivot(Item* A, size_t n) {
+    return QuickSortDualPivotYaroslavskiy(A, 0, n - 1);
 }
 
 /******************************************************************************/
 // Merge Sort (out-of-place with sentinels) (code by myself, Timo Bingmann)
 
-void Merge(size_t lo, size_t mid, size_t hi) {
+void Merge(Item* A, size_t lo, size_t mid, size_t hi) {
     // allocate output
     Item out[hi - lo];
 
@@ -453,25 +451,25 @@ void Merge(size_t lo, size_t mid, size_t hi) {
         A[lo + i] = out[i];
 }
 
-void MergeSort(size_t lo, size_t hi) {
+void MergeSort(Item* A, size_t lo, size_t hi) {
     if (lo + 1 < hi) {
         size_t mid = (lo + hi) / 2;
 
-        MergeSort(lo, mid);
-        MergeSort(mid, hi);
+        MergeSort(A, lo, mid);
+        MergeSort(A, mid, hi);
 
-        Merge(lo, mid, hi);
+        Merge(A, lo, mid, hi);
     }
 }
 
-void MergeSort() {
-    return MergeSort(0, array_size);
+void MergeSort(Item* A, size_t n) {
+    return MergeSort(A, 0, n);
 }
 
-void MergeSortIterative() {
-    for (size_t s = 1; s < array_size; s *= 2) {
-        for (size_t i = 0; i + s < array_size; i += 2 * s) {
-            Merge(i, i + s, std::min(i + 2 * s, array_size));
+void MergeSortIterative(Item* A, size_t n) {
+    for (size_t s = 1; s < n; s *= 2) {
+        for (size_t i = 0; i + s < n; i += 2 * s) {
+            Merge(A, i, i + s, std::min(i + 2 * s, n));
         }
     }
 }
@@ -479,14 +477,14 @@ void MergeSortIterative() {
 /******************************************************************************/
 // Shell's Sort
 
-void ShellSort() {
+void ShellSort(Item* A, size_t n) {
     size_t incs[16] = {
         1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968,
         861, 336, 112, 48, 21, 7, 3, 1
     };
 
     for (size_t k = 0; k < 16; k++) {
-        for (size_t h = incs[k], i = h; i < array_size; i++) {
+        for (size_t h = incs[k], i = h; i < n; i++) {
             Item v = A[i];
             size_t j = i;
 
@@ -519,8 +517,8 @@ int largestPowerOfTwoLessThan(int n) {
     return k >> 1;
 }
 
-void HeapSort() {
-    size_t n = array_size, i = n / 2;
+void HeapSort(Item* A, size_t n) {
+    size_t i = n / 2;
 
     while (1) {
         if (i > 0) {
@@ -559,7 +557,7 @@ void HeapSort() {
 /******************************************************************************/
 // Cycle Sort (adapted from http://en.wikipedia.org/wiki/Cycle_sort)
 
-void CycleSort(ssize_t n) {
+void CycleSort(Item* A, ssize_t n) {
     ssize_t cycleStart = 0;
     ssize_t rank = 0;
 
@@ -592,19 +590,19 @@ void CycleSort(ssize_t n) {
     }
 }
 
-void CycleSort() {
-    CycleSort(array_size);
+void CycleSort(Item* A, size_t n) {
+    CycleSort(A, n);
 }
 
 /******************************************************************************/
 // Radix Sort (counting sort, most significant digit (MSD) first, in-place
 // redistribute) (code by myself, Timo Bingmann)
 
-void RadixSortMSD(size_t lo, size_t hi, size_t depth) {
+void RadixSortMSD(Item* A, size_t n, size_t lo, size_t hi, size_t depth) {
     // radix and base calculations
     const unsigned int RADIX = 4;
 
-    unsigned int pmax = floor(log(array_size) / log(RADIX));
+    unsigned int pmax = floor(log(n) / log(RADIX));
     size_t base = pow(RADIX, pmax - depth);
 
     // count digits
@@ -635,33 +633,33 @@ void RadixSortMSD(size_t lo, size_t hi, size_t depth) {
     size_t sum = lo;
     for (size_t i = 0; i < RADIX; ++i) {
         if (count[i] > 1)
-            RadixSortMSD(sum, sum + count[i], depth + 1);
+            RadixSortMSD(A, n, sum, sum + count[i], depth + 1);
         sum += count[i];
     }
 }
 
-void RadixSortMSD() {
-    return RadixSortMSD(0, array_size, 0);
+void RadixSortMSD(Item* A, size_t n) {
+    return RadixSortMSD(A, n, 0, n, 0);
 }
 
 /******************************************************************************/
 // Radix Sort (counting sort, least significant digit (LSD) first, out-of-place
 // redistribute) (code by myself, Timo Bingmann)
 
-void RadixSortLSD() {
+void RadixSortLSD(Item* A, size_t n) {
     // radix and base calculations
     const unsigned int RADIX = 4;
 
-    unsigned int pmax = ceil(log(array_size) / log(RADIX));
+    unsigned int pmax = ceil(log(n) / log(RADIX));
 
     for (unsigned int p = 0; p < pmax; ++p) {
         size_t base = pow(RADIX, p);
 
         // count digits and copy data
         std::vector<size_t> count(RADIX, 0);
-        std::vector<Item> copy(array_size);
+        std::vector<Item> copy(n);
 
-        for (size_t i = 0; i < array_size; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             size_t r = (copy[i] = A[i]).value() / base % RADIX;
             assert(r < RADIX);
             count[r]++;
@@ -672,7 +670,7 @@ void RadixSortLSD() {
         std::partial_sum(count.begin(), count.end(), bkt.begin() + 1);
 
         // redistribute items back into array (stable)
-        for (size_t i = 0; i < array_size; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             size_t r = copy[i].value() / base % RADIX;
             A[bkt[r]++] = copy[i];
         }
@@ -681,40 +679,40 @@ void RadixSortLSD() {
 
 /******************************************************************************/
 
-void StdSort() {
-    std::sort(A.begin(), A.end());
+void StdSort(Item* A, size_t n) {
+    std::sort(A, A + n);
 }
 
-void StdStableSort() {
-    std::stable_sort(A.begin(), A.end());
-}
-
-/******************************************************************************/
-
-void WikiSort() {
-    WikiSortNS::Sort(A.begin(), A.end(), std::less<Item>());
+void StdStableSort(Item* A, size_t n) {
+    std::stable_sort(A, A + n);
 }
 
 /******************************************************************************/
 
-void TimSort() {
-    TimSortNS::timsort(A.begin(), A.end());
+void WikiSort(Item* A, size_t n) {
+    WikiSortNS::Sort(A, A + n, std::less<Item>());
+}
+
+/******************************************************************************/
+
+void TimSort(Item* A, size_t n) {
+    TimSortNS::timsort(A, A + n);
 }
 
 /******************************************************************************/
 // BozoSort
 
-void BozoSort() {
+void BozoSort(Item* A, size_t n) {
     unsigned long ts = millis() + 20000;
     while (millis() < ts) {
         // swap two random items
-        swap(A[random(array_size)], A[random(array_size)]);
+        swap(A[random(n)], A[random(n)]);
         // swap two random items
-        swap(A[random(array_size)], A[random(array_size)]);
+        swap(A[random(n)], A[random(n)]);
         // swap two random items
-        swap(A[random(array_size)], A[random(array_size)]);
+        swap(A[random(n)], A[random(n)]);
         // swap two random items
-        swap(A[random(array_size)], A[random(array_size)]);
+        swap(A[random(n)], A[random(n)]);
     }
 }
 
@@ -731,7 +729,7 @@ public:
 
         // set strip size
         array_size = strip_.size();
-        A.resize(array_size);
+        array.resize(array_size);
 
         frame_drop_ = 0;
         delay_time_ = 0;
@@ -742,24 +740,24 @@ public:
 
     void array_randomize() {
         for (uint32_t i = 0; i < array_size; ++i) {
-            A[i].SetNoDelay(i);
+            array[i].SetNoDelay(i);
         }
         for (uint32_t i = 0; i < array_size; ++i) {
             uint32_t j = random(array_size);
-            A[i].SwapNoDelay(A[j]);
+            array[i].SwapNoDelay(array[j]);
         }
     }
 
     void array_black() {
         for (uint32_t i = 0; i < array_size; ++i) {
-            A[i].SetNoDelay(black);
+            array[i].SetNoDelay(black);
         }
     }
 
     void array_check() {
         for (size_t i = 1; i < array_size; ++i) {
-            if (A[i - 1] >= A[i]) {
-                A[i - 1] = Item(black);
+            if (array[i - 1] >= array[i]) {
+                array[i - 1] = Item(black);
             }
         }
     }
@@ -768,9 +766,9 @@ public:
     unsigned intensity_low = 64;
 
     void OnAccess(const Item* a, bool with_delay) override {
-        if (a < A.data() || a >= A.data() + array_size)
+        if (a < array.data() || a >= array.data() + array_size)
             return;
-        flash(a - A.data(), with_delay);
+        flash(a - array.data(), with_delay);
     }
 
     size_t num_comparisons = 0;
@@ -781,13 +779,13 @@ public:
         if (ComparisonCountHook) {
             ComparisonCountHook(num_comparisons);
         }
-        if (a >= A.data() && a < A.data() + array_size &&
-            b >= A.data() && b < A.data() + array_size)
-            flash(a - A.data(), b - A.data(), /* with_delay */ true);
-        else if (a >= A.data() && a < A.data() + array_size)
-            flash(a - A.data(), /* with_delay */ true);
-        else if (b >= A.data() && b < A.data() + array_size)
-            flash(b - A.data(), /* with_delay */ true);
+        if (a >= array.data() && a < array.data() + array_size &&
+            b >= array.data() && b < array.data() + array_size)
+            flash(a - array.data(), b - array.data(), /* with_delay */ true);
+        else if (a >= array.data() && a < array.data() + array_size)
+            flash(a - array.data(), /* with_delay */ true);
+        else if (b >= array.data() && b < array.data() + array_size)
+            flash(b - array.data(), /* with_delay */ true);
     }
 
     void set_delay_time(int32_t delay_time) {
@@ -823,19 +821,19 @@ public:
     uint16_t value_to_hue(size_t i) { return i * HSV_HUE_MAX / array_size; }
 
     void flash_low(size_t i) {
-        if (A[i].value_ == black)
+        if (array[i].value_ == black)
             strip_.setPixel(i, 0);
         else
             strip_.setPixel(
-                i, HSVColor(value_to_hue(A[i].value_), 255, intensity_low));
+                i, HSVColor(value_to_hue(array[i].value_), 255, intensity_low));
     }
 
     void flash_high(size_t i) {
-        if (A[i].value_ == black) {
+        if (array[i].value_ == black) {
             strip_.setPixel(i, Color(intensity_high));
         }
         else {
-            Color c = HSVColor(value_to_hue(A[i].value_), 255, intensity_high);
+            Color c = HSVColor(value_to_hue(array[i].value_), 255, intensity_high);
             c.white = 128;
             strip_.setPixel(i, c);
         }
@@ -933,14 +931,14 @@ protected:
 
 template <typename LEDStrip>
 void RunSort(LEDStrip& strip, const char* algo_name,
-             void (*sort_function)(), int32_t delay_time = 10000) {
+             void (*sort_function)(Item* A, size_t n), int32_t delay_time = 10000) {
     printf("delay time: %d\n", delay_time);
     uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
         AlgorithmNameHook(algo_name);
     ani.array_randomize();
-    sort_function();
+    sort_function(array.data(), array_size);
     printf("Running time: %.2f\n", (millis() - ts) / 1000.0);
 
     ts = millis();
