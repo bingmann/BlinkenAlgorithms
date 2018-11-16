@@ -725,7 +725,7 @@ class SortAnimation : public SortAnimationBase
 {
 public:
     SortAnimation(LEDStrip& strip, int32_t delay_time = 1000)
-        : strip_(strip), delay_time_(delay_time) {
+        : strip_(strip) {
         // hook sorting animation callbacks
         sort_animation_hook = this;
 
@@ -733,8 +733,11 @@ public:
         array_size = strip_.size();
         A.resize(array_size);
 
-        if (delay_time_ < 0)
-            frame_drop = -delay_time_;
+        frame_drop_ = 0;
+        delay_time_ = 0;
+        set_delay_time(delay_time);
+
+        enable_count_ = true;
     }
 
     void array_randomize() {
@@ -773,7 +776,8 @@ public:
     size_t num_comparisons = 0;
 
     void OnComparison(const Item* a, const Item* b) override {
-        ++num_comparisons;
+        if (enable_count_)
+            ++num_comparisons;
         if (ComparisonCountHook) {
             ComparisonCountHook(num_comparisons);
         }
@@ -781,16 +785,39 @@ public:
             b >= A.data() && b < A.data() + array_size)
             flash(a - A.data(), b - A.data(), /* with_delay */ true);
         else if (a >= A.data() && a < A.data() + array_size)
-            flash(a - A.data(), /* with_delay */ false);
+            flash(a - A.data(), /* with_delay */ true);
         else if (b >= A.data() && b < A.data() + array_size)
             flash(b - A.data(), /* with_delay */ true);
     }
 
-    void yield_delay() {
-        if (delay_time_ > 0)
-            delay_micros(delay_time_);
+    void set_delay_time(int32_t delay_time) {
+        pflush();
+
+        delay_time_ = delay_time;
+
+        if (delay_time_ < 0) {
+            frame_drop_ = -delay_time_;
+            frame_buffer_pos_ = frame_drop_ - 1;
+        }
+        else {
+            frame_drop_ = 0;
+            frame_buffer_pos_ = 0;
+        }
+    }
+
+    void set_enable_count(bool enable_count) {
+        enable_count_ = enable_count;
+    }
+
+    void yield_delay(int32_t delay_time) {
+        if (delay_time > 0)
+            delay_micros(delay_time);
         if (DelayHook)
             DelayHook();
+    }
+
+    void yield_delay() {
+        yield_delay(delay_time_);
     }
 
     uint16_t value_to_hue(size_t i) { return i * HSV_HUE_MAX / array_size; }
@@ -814,29 +841,29 @@ public:
         }
     }
 
-    size_t frame_buffer[128] = { 0 };
-    size_t frame_buffer_pos = 0;
-    size_t frame_drop = 0;
+    size_t frame_buffer_[128] = { 0 };
+    size_t frame_buffer_pos_ = 0;
+    size_t frame_drop_ = 0;
 
     void flash_low_buffer(size_t i) {
-        frame_buffer[frame_buffer_pos] = i;
+        frame_buffer_[frame_buffer_pos_] = i;
 
-        if (frame_buffer_pos == 0) {
+        if (frame_buffer_pos_ == 0) {
             if (!strip_.busy()) {
                 strip_.show();
             }
 
-            // reset pixels in this frame_buffer_pos
-            for (size_t k = 0; k < frame_drop; ++k) {
-                if (frame_buffer[k] < array_size)
-                    flash_low(frame_buffer[k]);
+            // reset pixels in this frame_buffer_pos_
+            for (size_t k = 0; k < frame_drop_; ++k) {
+                if (frame_buffer_[k] < array_size)
+                    flash_low(frame_buffer_[k]);
             }
 
-            frame_buffer_pos = frame_drop - 1;
+            frame_buffer_pos_ = frame_drop_ - 1;
             yield_delay();
         }
         else {
-            --frame_buffer_pos;
+            --frame_buffer_pos_;
         }
     }
 
@@ -844,7 +871,7 @@ public:
         if (!with_delay)
             return flash_low(i);
 
-        if (frame_drop == 0) {
+        if (frame_drop_ == 0) {
             flash_high(i);
 
             if (!strip_.busy())
@@ -864,7 +891,7 @@ public:
         if (!with_delay)
             return flash_low(i), flash_low(j);
 
-        if (frame_drop == 0) {
+        if (frame_drop_ == 0) {
             flash_high(i), flash_high(j);
 
             if (!strip_.busy())
@@ -882,13 +909,13 @@ public:
     }
 
     void pflush() {
-        // reset pixels in this frame_buffer_pos
-        for (size_t j = 0; j < frame_drop; ++j) {
-            if (frame_buffer[j] < array_size)
-                flash_low(frame_buffer[j]);
+        // reset pixels in this frame_buffer_pos_
+        for (size_t j = 0; j < frame_drop_; ++j) {
+            if (frame_buffer_[j] < array_size)
+                flash_low(frame_buffer_[j]);
         }
 
-        frame_buffer_pos = frame_drop - 1;
+        frame_buffer_pos_ = frame_drop_ - 1;
         yield_delay();
 
         strip_.show();
@@ -899,11 +926,15 @@ protected:
 
     //! user given delay time.
     int32_t delay_time_;
+
+    //! whether to count comparisons
+    bool enable_count_;
 };
 
 template <typename LEDStrip>
 void RunSort(LEDStrip& strip, const char* algo_name,
              void (*sort_function)(), int32_t delay_time = 10000) {
+    printf("delay time: %d\n", delay_time);
     uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
@@ -911,8 +942,14 @@ void RunSort(LEDStrip& strip, const char* algo_name,
     ani.array_randomize();
     sort_function();
     printf("Running time: %.2f\n", (millis() - ts) / 1000.0);
+
+    ts = millis();
+    ani.set_delay_time(-4);
+    ani.set_enable_count(false);
     ani.array_check();
     ani.pflush();
+    printf("Running time2: %.2f\n", (millis() - ts) / 1000.0);
+    ani.yield_delay(2000000);
 }
 
 /******************************************************************************/
