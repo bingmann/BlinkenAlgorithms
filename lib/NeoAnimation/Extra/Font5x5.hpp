@@ -28,7 +28,7 @@ public:
     void print_right(const char* str, MAX7219& led_matrix);
 
 protected:
-    static const size_t num_glyphs = 37;
+    static const size_t num_glyphs = 1 + 26 + 10 + 20;
 
     static char characters_[num_glyphs];
 
@@ -40,7 +40,9 @@ char Font5x5::characters_[num_glyphs] = {
     ' ',
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    '-', '+', '_', '.', ',', ':', ';', '!', '?', '(', ')', '\'', '"',
+    '=', '/', '*', '<', '>', '[', ']'
 };
 
 #include "Font5x5.xpm"
