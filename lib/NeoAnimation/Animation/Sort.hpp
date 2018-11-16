@@ -141,6 +141,8 @@ public:
     static void OnComparison(const Item&, const Item&);
 };
 
+using SortFunctionType = void (*)(Item * A, size_t n);
+
 class SortAnimationBase
 {
 public:
@@ -314,13 +316,8 @@ void QuickSortLR(Item* A, ssize_t lo, ssize_t hi) {
             j--;
         if (i <= j) {
             swap(A[i], A[j]);
-
             // follow pivot if it is swapped
-            if (p == i)
-                p = j;
-            else if (p == j)
-                p = i;
-
+            p = (p == i ? j : p == j ? i : p);
             i++, j--;
         }
     }
@@ -557,18 +554,18 @@ void HeapSort(Item* A, size_t n) {
 /******************************************************************************/
 // Cycle Sort (adapted from http://en.wikipedia.org/wiki/Cycle_sort)
 
-void CycleSort(Item* A, ssize_t n) {
-    ssize_t cycleStart = 0;
-    ssize_t rank = 0;
+void CycleSort(Item* A, size_t n) {
+    size_t cycleStart = 0;
+    size_t rank = 0;
 
     // Loop through the array to find cycles to rotate.
-    for (cycleStart = 0; cycleStart < n - 1; ++cycleStart) {
+    for (cycleStart = 0; cycleStart + 1 < n; ++cycleStart) {
         Item& item = A[cycleStart];
 
         do {
             // Find where to put the item.
             rank = cycleStart;
-            for (ssize_t i = cycleStart + 1; i < n; ++i) {
+            for (size_t i = cycleStart + 1; i < n; ++i) {
                 if (A[i] < item)
                     rank++;
             }
@@ -588,10 +585,6 @@ void CycleSort(Item* A, ssize_t n) {
             // Continue for rest of the cycle.
         } while (rank != cycleStart);
     }
-}
-
-void CycleSort(Item* A, size_t n) {
-    CycleSort(A, n);
 }
 
 /******************************************************************************/
@@ -808,14 +801,27 @@ public:
     }
 
     void yield_delay(int32_t delay_time) {
-        if (delay_time > 0)
-            delay_micros(delay_time);
+
+        if (delay_time > 0) {
+            int32_t remain = delay_time;
+            while (remain > 100000) {
+                delay_micros(100000);
+                remain -= 100000;
+            }
+            delay_micros(remain);
+        }
         if (DelayHook)
             DelayHook();
     }
 
     void yield_delay() {
-        yield_delay(delay_time_);
+        if (delay_time_ < 0) {
+            yield_delay(delay_time_);
+        }
+        else {
+            // apply global delay factor
+            yield_delay(delay_time_ * g_delay_factor / 1000);
+        }
     }
 
     uint16_t value_to_hue(size_t i) { return i * HSV_HUE_MAX / array_size; }
@@ -929,24 +935,68 @@ protected:
     bool enable_count_;
 };
 
+const char * GetSortFunctionName(SortFunctionType sort_function) {
+    if (sort_function == SelectionSort)
+        return "Selection Sort";
+    if (sort_function == InsertionSort)
+        return "Insertion Sort";
+    if (sort_function == BubbleSort)
+        return "Bubble Sort";
+    if (sort_function == CocktailShakerSort)
+        return "Cocktail-Shaker Sort";
+    if (sort_function == SortFunctionType(QuickSortLR))
+        return "QuickSort (LR)\nHoare";
+    if (sort_function == SortFunctionType(QuickSortLL))
+        return "QuickSort (LL)\nLomoto";
+    if (sort_function == QuickSortDualPivot)
+        return "QuickSort\nDual Pivot";
+    if (sort_function == SortFunctionType(MergeSort))
+        return "MergeSort";
+    if (sort_function == ShellSort)
+        return "ShellSort";
+    if (sort_function == HeapSort)
+        return "HeapSort";
+    if (sort_function == SortFunctionType(CycleSort))
+        return "CycleSort";
+    if (sort_function == SortFunctionType(RadixSortMSD))
+        return "RadixSortMSD";
+    if (sort_function == RadixSortLSD)
+        return "RadixSortLSD";
+    if (sort_function == StdSort)
+        return "std::sort";
+    if (sort_function == StdStableSort)
+        return "std::stable_sort";
+    if (sort_function == WikiSort)
+        return "WikiSort";
+    if (sort_function == TimSort)
+        return "TimSort";
+    if (sort_function == BozoSort)
+        return "BozoSort";
+
+    return "<Unknown>";
+}
+
 template <typename LEDStrip>
-void RunSort(LEDStrip& strip, const char* algo_name,
-             void (*sort_function)(Item* A, size_t n), int32_t delay_time = 10000) {
-    printf("delay time: %d\n", delay_time);
+void RunSort(LEDStrip& strip, void (*sort_function)(Item* A, size_t n),
+             int32_t delay_time = 10000) {
+
+    const char* algo_name = GetSortFunctionName(sort_function);
+    printf("%s delay time: %d\n", algo_name, delay_time);
+
     uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
         AlgorithmNameHook(algo_name);
     ani.array_randomize();
     sort_function(array.data(), array_size);
-    printf("Running time: %.2f\n", (millis() - ts) / 1000.0);
+    printf("%s running time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
 
     ts = millis();
     ani.set_delay_time(-4);
     ani.set_enable_count(false);
     ani.array_check();
     ani.pflush();
-    printf("Running time2: %.2f\n", (millis() - ts) / 1000.0);
+    printf("%s check time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
     ani.yield_delay(2000000);
 }
 
@@ -954,28 +1004,23 @@ void RunSort(LEDStrip& strip, const char* algo_name,
 
 template <typename LEDStrip>
 void RunAllSortAnimation(LEDStrip& strip) {
-#define DRunSort(A) \
-    RunSort(strip, #A, A)
-
-    DRunSort(SelectionSort);
-    DRunSort(InsertionSort);
-    DRunSort(BubbleSort);
-    DRunSort(CocktailShakerSort);
-    DRunSort(QuickSortLR);
-    DRunSort(QuickSortDualPivot);
-    DRunSort(MergeSort);
-    DRunSort(ShellSort);
-    DRunSort(HeapSort);
-    DRunSort(CycleSort);
-    DRunSort(RadixSortMSD);
-    DRunSort(RadixSortLSD);
-    DRunSort(StdSort);
-    DRunSort(StdStableSort);
-    DRunSort(WikiSort);
-    DRunSort(TimSort);
-    DRunSort(BozoSort);
-
-#undef DRunSort
+    RunSort(strip, SelectionSort);
+    RunSort(strip, InsertionSort);
+    RunSort(strip, BubbleSort);
+    RunSort(strip, CocktailShakerSort);
+    RunSort(strip, QuickSortLR);
+    RunSort(strip, QuickSortDualPivot);
+    RunSort(strip, MergeSort);
+    RunSort(strip, ShellSort);
+    RunSort(strip, HeapSort);
+    RunSort(strip, CycleSort);
+    RunSort(strip, RadixSortMSD);
+    RunSort(strip, RadixSortLSD);
+    RunSort(strip, StdSort);
+    RunSort(strip, StdStableSort);
+    RunSort(strip, WikiSort);
+    RunSort(strip, TimSort);
+    RunSort(strip, BozoSort);
 }
 
 } // namespace NeoSort

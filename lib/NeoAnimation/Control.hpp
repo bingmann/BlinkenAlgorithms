@@ -19,6 +19,7 @@
 #endif
 
 extern bool g_terminate;
+extern size_t g_delay_factor;
 
 /******************************************************************************/
 // Raspberry Pi: add missing global functions

@@ -46,8 +46,6 @@ void LinearProbingHT(Item* A, size_t n) {
             idx = (idx + 1) % n;
         }
         A[idx] = v;
-
-        delay_millis(25);
     }
 }
 
@@ -79,11 +77,11 @@ void QuadraticProbingHT(Item* A, size_t n) {
 /******************************************************************************/
 // Cuckoo Hashing with Two Choices
 
-uint32_t hash2(int f, uint32_t a, size_t n) {
+uint32_t hash2(int f, uint32_t a) {
     if (f == 0)
-        return (hash(a) >> 2) % n;
+        return hash(a) >> 2;
     if (f == 1)
-        return (hash(a) >> 15) % n;
+        return hash(a) >> 15;
     return 0;
 }
 
@@ -95,13 +93,13 @@ void CuckooHashingTwo(Item* A, size_t n) {
         // pick a new item to insert
         Item v = Item((i + cshift) % n);
 
-        uint32_t pos = hash2(0, v.value(), n);
+        uint32_t pos = hash2(0, v.value()) % n;
         if (A[pos].value() == black) {
             A[pos] = v;
             continue;
         }
 
-        pos = hash2(1, v.value(), n);
+        pos = hash2(1, v.value()) % n;
         if (A[pos].value() == black) {
             A[pos] = v;
             continue;
@@ -110,12 +108,12 @@ void CuckooHashingTwo(Item* A, size_t n) {
         size_t r = 0;
         int hashfunction = 1;
         while (true) {
-            pos = hash2(hashfunction, v.value(), n);
+            pos = hash2(hashfunction, v.value()) % n;
             swap(v, A[pos]);
             if (v.value() == black)
                 break;
 
-            if (hash2(hashfunction, v.value(), n) == pos)
+            if (hash2(hashfunction, v.value()) % n == pos)
                 hashfunction = (hashfunction + 1) % 2;
 
             if (++r >= n)
@@ -187,16 +185,33 @@ void CuckooHashingThree(Item* A, size_t n) {
 
 /******************************************************************************/
 
+const char * GetHashFunctionName(SortFunctionType sort_function) {
+    if (sort_function == LinearProbingHT)
+        return "Hashing\nLinear Probe";
+    if (sort_function == QuadraticProbingHT)
+        return "Hashing\nQuadratic Pr";
+    if (sort_function == CuckooHashingTwo)
+        return "Hashing\nCuckoo Two";
+    if (sort_function == CuckooHashingThree)
+        return "Hashing\nCuckoo Three";
+
+    return "<Unknown>";
+}
+
 template <typename LEDStrip>
-void RunHash(LEDStrip& strip, const char* algo_name,
-             void (*hash_function)(Item* A, size_t n), int32_t delay_time = 10000) {
+void RunHash(LEDStrip& strip, void (*hash_function)(Item* A, size_t n),
+             int32_t delay_time = 10000) {
+
+    const char* algo_name = GetHashFunctionName(hash_function);
+    printf("%s delay time: %d\n", algo_name, delay_time);
+
     uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
         AlgorithmNameHook(algo_name);
     ani.array_black();
     hash_function(array.data(), array.size());
-    printf("Running time: %.2f\n", (millis() - ts) / 1000.0);
+    printf("%s running time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
 }
 
 template <typename LEDStrip>

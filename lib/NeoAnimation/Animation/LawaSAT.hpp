@@ -261,7 +261,7 @@ public:
     unsigned intensity_high = 255;
     unsigned intensity_low = 64;
 
-    void OnChange(const Item* a, bool with_delay) override {
+    void OnAccess(const Item* a, bool with_delay) override {
         if (a < array.data() || a >= array.data() + array_size)
             return;
         flash(a - array.data(), with_delay);
@@ -306,6 +306,8 @@ public:
             strip_.show();
 
         delay_micros(100);
+        if (DelayHook)
+            DelayHook();
 
         flash_low(i);
     }
@@ -318,6 +320,8 @@ public:
 template <typename LEDStrip>
 void RunLawaSAT(LEDStrip& strip) {
     LawaAnimation<LEDStrip> ani(strip);
+    if (AlgorithmNameHook)
+        AlgorithmNameHook("SAT Solver\nLazy Walk");
     ani.array_black();
     Lawa().Run();
 }
