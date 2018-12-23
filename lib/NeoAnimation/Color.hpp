@@ -32,6 +32,8 @@ struct Color {
         uint32_t v;
     } __attribute__ ((packed));
 
+    Color() = default;
+
     Color(uint8_t w) : w(w), b(0), g(0), r(0) { }
 
     Color(uint8_t r, uint8_t g, uint8_t b) : w(0), b(b), g(g), r(r) { }
@@ -45,19 +47,19 @@ struct Color {
 static inline Color WheelColor(uint32_t i, uint8_t intensity) {
     if (intensity == 0)
         return Color(0);
-    i &= 255;
+    i &= 0xFF;
     if (i < 85) {
         return Color(
-            (256 - i * 3) * 255u / intensity, 0, (i * 3) * 255 / intensity);
+            (256 - i * 3) * intensity / 255u, 0, (i * 3) * intensity / 255u);
     }
     if (i < 170) {
         i -= 85;
         return Color(
-            0, (i * 3) * 255u / intensity, (255 - i * 3) * 255u / intensity);
+            0, (i * 3) * intensity / 255u, (255 - i * 3) * intensity / 255u);
     }
     i -= 170;
     return Color(
-        (i * 3) * 255u / intensity, (255 - i * 3) * 255u / intensity, 0);
+        (i * 3) * intensity / 255u, (255 - i * 3) * intensity / 255u, 0);
 }
 
 //! Input a value 0 to 255 to get a color value.
@@ -65,24 +67,24 @@ static inline Color WheelColor(uint32_t i, uint8_t intensity) {
 static inline Color WheelColorWhite(uint32_t i, uint8_t intensity) {
     if (intensity == 0)
         return Color(0);
-    i &= 255;
+    i &= 0xFF;
     if (i < 64) {
         return Color(
-            (256 - i * 4) * 255u / intensity, 0, (i * 4) * 255 / intensity);
+            (256 - i * 4) * intensity / 255u, 0, (i * 4) * intensity / 255u);
     }
     if (i < 128) {
         i -= 64;
         return Color(
-            0, (i * 4) * 255u / intensity, (255 - i * 4) * 255u / intensity);
+            0, (i * 4) * intensity / 255u, (255 - i * 4) * intensity / 255u);
     }
     if (i < 192) {
         i -= 128;
         return Color(
-            (i * 4) * 255u / intensity, (255 - i * 4) * 255u / intensity, 0);
+            (i * 4) * intensity / 255u, (255 - i * 4) * intensity / 255u, 0);
     }
     i -= 192;
     return Color(
-        0, 0, (256 - i * 4) * 255u / intensity, (i * 4) * 255u / intensity);
+        0, 0, (256 - i * 4) * intensity / 255u, (i * 4) * intensity / 255u);
 }
 
 //! hue ranges 0--HSV_HUE_MAX=1535, sat and val range 0-255.
