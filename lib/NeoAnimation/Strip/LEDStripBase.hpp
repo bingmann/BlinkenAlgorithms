@@ -30,6 +30,31 @@ protected:
 };
 
 /******************************************************************************/
+// Generic Remappers
+
+template <typename BaseStrip, size_t Repeat>
+class RepeatStrip : public BaseStrip
+{
+public:
+    RepeatStrip(BaseStrip& base)
+        : BaseStrip(base) { }
+
+    size_t size() { return BaseStrip::size() / Repeat; }
+
+    void setPixel(size_t i, const Color& c) {
+        for (size_t r = 0; r < Repeat; ++r) {
+            BaseStrip::setPixel(Repeat * i + r, c);
+        }
+    }
+
+    void orPixel(size_t i, const Color& c) {
+        for (size_t r = 0; r < Repeat; ++r) {
+            BaseStrip::orPixel(Repeat * i + r, c);
+        }
+    }
+};
+
+/******************************************************************************/
 // Milliways Dome @ EMF 2018
 
 template <typename BaseStrip>
