@@ -175,15 +175,19 @@ template <typename LEDStrip>
 class SparkleWhite
 {
 public:
-    SparkleWhite(LEDStrip&)
-        : seed(static_cast<uint32_t>(random(10000000))) { }
+    SparkleWhite(LEDStrip&, size_t speed = 100, size_t density = 10)
+        : seed_(static_cast<uint32_t>(random(10000000))),
+          speed_(speed), density_(density) { }
 
     size_t pix = 4;
 
-    uint32_t seed;
+    uint32_t seed_;
 
-    std::default_random_engine rng1{ seed };
-    std::default_random_engine rng2{ seed };
+    size_t speed_;
+    size_t density_;
+
+    std::default_random_engine rng1{ seed_ };
+    std::default_random_engine rng2{ seed_ };
 
     uint32_t operator () (LEDStrip& strip, uint32_t s) {
         size_t strip_size = strip.size();
@@ -193,13 +197,13 @@ public:
             strip.setPixel(rng1() % strip_size, w);
         }
         else {
-            if (pix >= strip_size / 10)
+            if (pix >= strip_size / density_)
                 strip.setPixel(rng2() % strip_size, 0);
             else
                 ++pix;
         }
 
-        return 100;
+        return speed_;
     }
 };
 
@@ -207,16 +211,20 @@ template <typename LEDStrip>
 class SparkleRGB
 {
 public:
-    SparkleRGB(LEDStrip&)
-        : seed(static_cast<uint32_t>(random(10000000))) { }
+    SparkleRGB(LEDStrip&, size_t speed = 100, size_t density = 10)
+        : seed_(static_cast<uint32_t>(random(10000000))),
+          speed_(speed), density_(density) { }
 
     size_t pix = 4;
 
-    uint32_t seed;
+    uint32_t seed_;
 
-    std::default_random_engine rng1{ seed };
-    std::default_random_engine rng2{ seed };
-    std::default_random_engine rng3{ seed };
+    size_t speed_;
+    size_t density_;
+
+    std::default_random_engine rng1{ seed_ };
+    std::default_random_engine rng2{ seed_ };
+    std::default_random_engine rng3{ seed_ };
 
     uint32_t operator () (LEDStrip& strip, uint32_t s) {
         size_t strip_size = strip.size();
@@ -227,13 +235,13 @@ public:
                 rng1() % strip_size, WheelColor(rng3(), intensity));
         }
         else {
-            if (pix >= strip_size / 10)
+            if (pix >= strip_size / density_)
                 strip.setPixel(rng2() % strip_size, 0);
             else
                 ++pix;
         }
 
-        return 100;
+        return speed_;
     }
 };
 
@@ -317,18 +325,16 @@ template <typename LEDStrip>
 class Fire
 {
 public:
-    Fire(LEDStrip& strip) : strip(strip) {
+    Fire(LEDStrip& strip, size_t cooling = 20, size_t sparking = 160)
+        : strip(strip), cooling_(cooling), sparking_(sparking) {
         strip_size = strip.size();
         heat.resize(strip_size);
     }
 
-    static const size_t Cooling = 20;
-    static const size_t Sparking = 160;
-
     uint32_t operator () (LEDStrip& strip, uint32_t /* s */) {
         // Step 1. Cool down every cell a little
         for (size_t i = 0; i < strip_size; i++) {
-            size_t cooldown = random(0, ((Cooling * 10) / strip_size) + 2);
+            size_t cooldown = random(0, ((cooling_ * 10) / strip_size) + 2);
 
             if (cooldown > heat[i]) {
                 heat[i] = 0;
@@ -344,7 +350,7 @@ public:
         }
 
         // Step 3. Randomly ignite new 'sparks' near the bottom
-        if (random(255) < Sparking) {
+        if (random(255) < sparking_) {
             size_t y = random(7);
             heat[y] = heat[y] + random(160, 255);
             // heat[y] = random(160,255);
@@ -362,6 +368,9 @@ public:
 private:
     LEDStrip& strip;
 
+    size_t cooling_;
+    size_t sparking_;
+
     std::vector<uint8_t> heat;
     size_t strip_size;
 };
@@ -370,19 +379,18 @@ template <typename LEDStrip>
 class FireIce
 {
 public:
-    FireIce(LEDStrip& strip) : strip(strip) {
+    FireIce(LEDStrip& strip, size_t cooling = 20, size_t sparking = 160)
+        : strip(strip), cooling_(cooling), sparking_(sparking)
+    {
         strip_size = strip.size();
         heat.resize(strip_size);
         ice.resize(strip_size);
     }
 
-    static const size_t Cooling = 45;
-    static const size_t Sparking = 250;
-
     uint32_t operator () (LEDStrip& strip, uint32_t /* s */) {
         // Step 1. Cool down every cell a little
         for (size_t i = 0; i < strip_size; i++) {
-            size_t cooldown = random(0, ((Cooling * 10) / strip_size) + 2);
+            size_t cooldown = random(0, ((cooling_ * 10) / strip_size) + 2);
 
             if (cooldown > heat[i]) {
                 heat[i] = 0;
@@ -392,7 +400,7 @@ public:
             }
         }
         for (size_t i = 0; i < strip_size; i++) {
-            size_t cooldown = random(0, ((Cooling * 10) / strip_size) + 2);
+            size_t cooldown = random(0, ((cooling_ * 10) / strip_size) + 2);
 
             if (cooldown > ice[i]) {
                 ice[i] = 0;
@@ -411,12 +419,12 @@ public:
         }
 
         // Step 3. Randomly ignite new 'sparks' near the bottom
-        if (random(255) < Sparking) {
+        if (random(255) < sparking_) {
             size_t y = random(7);
             heat[y] = heat[y] + random(160, 255);
             // heat[y] = random(160,255);
         }
-        if (random(255) < Sparking) {
+        if (random(255) < sparking_) {
             size_t y = random(7);
             ice[y] = ice[y] + random(160, 255);
             // ice[y] = random(160,255);
@@ -442,6 +450,9 @@ public:
 
 private:
     LEDStrip& strip;
+
+    size_t cooling_;
+    size_t sparking_;
 
     std::vector<uint8_t> heat, ice;
     size_t strip_size;
