@@ -63,7 +63,8 @@ void setup() {
 using namespace NeoAnimation;
 
 void loop() {
-    NeoPixelBusAdapter<decltype(strip)> my_strip(strip);
+    using MyStrip = NeoPixelBusAdapter<decltype(strip)>;
+    MyStrip my_strip(strip);
 
     static const size_t time_limit = 20000;
 
@@ -74,34 +75,54 @@ void loop() {
         size_t a = random(10);
         switch (a) {
         case 0:
-            RunAnimation<ColorWipeRGBW>(my_strip, time_limit);
+            RunAnimation(
+                ColorWipeRGBW<MyStrip>(my_strip),
+                time_limit);
             break;
         case 1:
-            RunAnimation<ColorWipeTwoSine>(my_strip, time_limit);
+            RunAnimation(
+                ColorWipeTwoSine<MyStrip>(my_strip),
+                time_limit);
             break;
         case 2:
-            RunAnimation<WheelColorTest>(my_strip, time_limit);
+            RunAnimation(
+                WheelColorTest<MyStrip>(my_strip),
+                time_limit);
             break;
         case 3:
-            RunAnimation<HSVColorTest>(my_strip, time_limit);
+            RunAnimation(
+                HSVColorTest<MyStrip>(my_strip),
+                time_limit);
             break;
         case 4:
-            RunAnimation<SparkleWhite>(my_strip, time_limit);
+            RunAnimation(
+                SparkleWhite<MyStrip>(my_strip),
+                time_limit);
             break;
         case 5:
-            RunAnimation<SparkleRGB>(my_strip, time_limit);
+            RunAnimation(
+                SparkleRGB<MyStrip>(my_strip),
+                time_limit);
             break;
         case 6:
-            RunAnimation<Fire>(my_strip, time_limit);
+            RunAnimation(
+                Fire<MyStrip>(my_strip),
+                time_limit);
             break;
         case 7:
-            RunAnimation<FireIce>(my_strip, time_limit);
+            RunAnimation(
+                FireIce<MyStrip>(my_strip),
+                time_limit);
             break;
         case 8:
-            RunAnimation<SprayColor>(my_strip, time_limit);
+            RunAnimation(
+                SprayColor<MyStrip>(my_strip),
+                time_limit);
             break;
         case 9:
-            RunAnimation<Fireworks>(my_strip, time_limit);
+            RunAnimation(
+                Fireworks<MyStrip>(my_strip),
+                time_limit);
             break;
         }
     }

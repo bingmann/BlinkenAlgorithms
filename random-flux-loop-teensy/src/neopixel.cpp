@@ -12,6 +12,7 @@
 /******************************************************************************/
 
 #include <NeoAnimation/Animation/Flux.hpp>
+#include <NeoAnimation/Animation/RandomAlgorithm.hpp>
 #include <NeoAnimation/RunAnimation.hpp>
 #include <NeoAnimation/Strip/OctoSK6812Adapter.hpp>
 
@@ -22,8 +23,8 @@ int drawMemory[strip_size * 8];
 
 OctoSK6812 strip(strip_size, displayMemory, drawMemory, SK6812_GRBW);
 
-using SK6812 = NeoAnimation::OctoSK6812Adapter<OctoSK6812>;
-SK6812 my_strip(strip, /* active_parts */ 4);
+using MyStrip = NeoAnimation::OctoSK6812Adapter<OctoSK6812>;
+MyStrip my_strip(strip, /* active_parts */ 1);
 
 /******************************************************************************/
 
@@ -91,41 +92,77 @@ void loop() {
         for (size_t i = 0; i < my_strip.size(); ++i)
             my_strip.setPixel(i, 0);
 
-        size_t a = random(11);
-        a = 10;
+        size_t a = random(14);
         switch (a) {
-        // case 0:
-        //     RunAnimation<ColorWipeRGBW>(my_strip, time_limit);
-        //     break;
-        // case 1:
-        //     RunAnimation<ColorWipeTwoSine>(my_strip, time_limit);
-        //     break;
-        // case 2:
-        //     RunAnimation<WheelColorTest>(my_strip, time_limit);
-        //     break;
-        // case 3:
-        //     RunAnimation<HSVColorTest>(my_strip, time_limit);
-        //     break;
-        // case 4:
-        //     RunAnimation<SparkleWhite>(my_strip, time_limit);
-        //     break;
-        // case 5:
-        //     RunAnimation<SparkleRGB>(my_strip, time_limit);
-        //     break;
-        // case 6:
-        //     RunAnimation<Fire>(my_strip, time_limit);
-        //     break;
-        // case 7:
-        //     RunAnimation<FireIce>(my_strip, time_limit);
-        //     break;
-        // case 8:
-        //     RunAnimation<SprayColor>(my_strip, time_limit);
-        //     break;
-        // case 9:
-        //     RunAnimation<Fireworks>(my_strip, time_limit);
-        //     break;
+        case 0:
+            RunAnimation(
+                ColorWipeRGBW<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 1:
+            RunAnimation(
+                ColorWipeTwoSine<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 2:
+            RunAnimation(
+                WheelColorTest<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 3:
+            RunAnimation(
+                HSVColorTest<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 4:
+            RunAnimation(
+                SparkleWhite<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 5:
+            RunAnimation(
+                SparkleRGB<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 6:
+            RunAnimation(
+                SparkleWhite<MyStrip>(my_strip, /* speed */ 2000, /* density */ 5),
+                time_limit);
+            break;
+        case 7:
+            RunAnimation(
+                SparkleRGB<MyStrip>(my_strip, /* speed */ 2000, /* density */ 5),
+                time_limit);
+            break;
+        case 8:
+            RunAnimation(
+                Fire<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 9:
+            RunAnimation(
+                FireIce<MyStrip>(my_strip),
+                time_limit);
+            break;
         case 10:
-            RunAnimation<Starlight>(my_strip, time_limit);
+            RunAnimation(
+                SprayColor<MyStrip>(my_strip, /* reverse */ false),
+                time_limit);
+            break;
+        case 11:
+            RunAnimation(
+                SprayColor<MyStrip>(my_strip, /* reverse */ true),
+                time_limit);
+            break;
+        case 12:
+            RunAnimation(
+                Fireworks<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 13:
+            RunAnimation(
+                Starlight<MyStrip>(my_strip),
+                time_limit);
             break;
         }
     }
