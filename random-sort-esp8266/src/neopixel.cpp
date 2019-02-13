@@ -49,6 +49,7 @@ NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> strip(/* strip_size */ 3
 // NeoPixelBus<NeoRgbFeature, NeoEsp8266BitBang400KbpsMethod> strip(PixelCount, PixelPin);
 
 bool g_terminate = false;
+size_t g_delay_factor = 1000;
 
 void setup() {
     Serial.begin(115200);
