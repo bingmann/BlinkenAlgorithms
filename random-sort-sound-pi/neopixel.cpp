@@ -11,6 +11,8 @@
 
 #include <SDL.h>
 
+#include <NeoAnimation/Porting/RaspberryPi.hpp>
+
 #include <NeoAnimation/Animation/RandomAlgorithm.hpp>
 #include <NeoAnimation/Strip/PiSPI_APA102.hpp>
 

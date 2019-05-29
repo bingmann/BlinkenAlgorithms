@@ -6,6 +6,8 @@
  * All rights reserved. Published under the GNU General Public License v3.0
  ******************************************************************************/
 
+#include <NeoAnimation/Porting/RaspberryPi.hpp>
+
 #include <NeoAnimation/Animation/Flux.hpp>
 #include <NeoAnimation/RunAnimation.hpp>
 #include <NeoAnimation/Strip/PiSPI_APA102.hpp>
