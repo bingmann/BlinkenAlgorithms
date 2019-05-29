@@ -68,8 +68,8 @@ public:
     void setPixel(size_t index, const Color& color) {
         if (index < strip_size_) {
             // try to transform color to RGB + brightness
-            unsigned r = color.r, g = color.g, b = color.b;
-            r += color.w, g += color.w, b += color.w;
+            unsigned r = gamma8(color.r), g = gamma8(color.g), b = gamma8(color.b);
+            r += gamma8(color.w), g += gamma8(color.w), b += gamma8(color.w);
             r = r > 255 ? 255 : r, g = g > 255 ? 255 : g, b = b > 255 ? 255 : b;
             unsigned m = std::max(std::max(r, g), b);
             strip_data_[index].r = r;
@@ -82,8 +82,8 @@ public:
     void orPixel(size_t index, const Color& color) {
         if (index < strip_size_) {
             // try to transform color to RGB + brightness
-            unsigned r = color.r, g = color.g, b = color.b;
-            r += color.w, g += color.w, b += color.w;
+            unsigned r = gamma8(color.r), g = gamma8(color.g), b = gamma8(color.b);
+            r += gamma8(color.w), g += gamma8(color.w), b += gamma8(color.w);
             r = r > 255 ? 255 : r, g = g > 255 ? 255 : g, b = b > 255 ? 255 : b;
             unsigned m = std::max(std::max(r, g), b);
             strip_data_[index].r |= r;
