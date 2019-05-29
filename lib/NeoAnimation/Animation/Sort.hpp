@@ -200,7 +200,7 @@ void SelectionSort(Item* A, size_t n) {
 // Insertion Sort
 
 void InsertionSort(Item* A, size_t n) {
-    for (size_t i = 1; i < n; ++i) {
+    for (size_t i = 1; i < n && !g_terminate; ++i) {
         Item key = A[i];
 
         ssize_t j = i - 1;
@@ -303,11 +303,14 @@ ssize_t QuickSortSelectPivot(Item* A, ssize_t lo, ssize_t hi) {
 // Quick Sort LR (pointers left and right, Hoare's partition schema)
 
 void QuickSortLR(Item* A, ssize_t lo, ssize_t hi) {
+    if (g_terminate)
+        return;
+
     ssize_t p = QuickSortSelectPivot(A, lo, hi + 1);
 
     ssize_t i = lo, j = hi;
 
-    while (i <= j) {
+    while (i <= j && !g_terminate) {
         while (A[i] < A[p])
             i++;
         while (A[j] > A[p])
@@ -433,7 +436,7 @@ void Merge(Item* A, size_t lo, size_t mid, size_t hi) {
 
     // merge
     size_t i = lo, j = mid, o = 0; // first and second halves
-    while (i < mid && j < hi) {
+    while (i < mid && j < hi && !g_terminate) {
         // copy out for fewer time steps
         Item ai = A[i], aj = A[j];
 
@@ -447,11 +450,14 @@ void Merge(Item* A, size_t lo, size_t mid, size_t hi) {
         out[o++] = A[j++];
 
     // copy back
-    for (i = 0; i < hi - lo; ++i)
+    for (i = 0; i < hi - lo && !g_terminate; ++i)
         A[lo + i] = out[i];
 }
 
 void MergeSort(Item* A, size_t lo, size_t hi) {
+    if (g_terminate)
+        return;
+
     if (lo + 1 < hi) {
         size_t mid = (lo + hi) / 2;
 
@@ -520,7 +526,7 @@ int largestPowerOfTwoLessThan(int n) {
 void HeapSort(Item* A, size_t n) {
     size_t i = n / 2;
 
-    while (1) {
+    while (!g_terminate) {
         if (i > 0) {
             // build heap, sift A[i] down the heap
             i--;
