@@ -744,6 +744,11 @@ public:
         enable_count_ = true;
     }
 
+    ~SortAnimation() {
+        // free array
+        std::vector<Item>().swap(array);
+    }
+
     void array_randomize() {
         for (uint32_t i = 0; i < array_size; ++i) {
             array[i].SetNoDelay(i);
@@ -938,22 +943,22 @@ protected:
 template <typename LEDStrip>
 void RunSort(LEDStrip& strip, const char* algo_name,
              void (*sort_function)(Item* A, size_t n), int32_t delay_time = 10000) {
-    printf("delay time: %d\n", delay_time);
-    uint32_t ts = millis();
+    // printf("delay time: %d\n", delay_time);
+    // uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
         AlgorithmNameHook(algo_name);
     ani.array_randomize();
     sort_function(array.data(), array_size);
-    printf("Running time: %.2f\n", (millis() - ts) / 1000.0);
+    // printf("Running time: %.2f\n", (millis() - ts) / 1000.0);
 
-    ts = millis();
+    // ts = millis();
     ani.set_delay_time(-4);
     ani.set_enable_count(false);
     ani.array_check();
     ani.pflush();
-    printf("Running time2: %.2f\n", (millis() - ts) / 1000.0);
-    ani.yield_delay(2000000);
+    // printf("Running time2: %.2f\n", (millis() - ts) / 1000.0);
+    ani.yield_delay(1000000);
 }
 
 /******************************************************************************/
