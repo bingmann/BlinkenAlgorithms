@@ -736,6 +736,7 @@ public:
         // set strip size
         array_size = strip_.size();
         array.resize(array_size);
+        intensity_last = strip.intensity();
 
         frame_drop_ = 0;
         delay_time_ = 0;
@@ -773,8 +774,9 @@ public:
         }
     }
 
-    unsigned intensity_high = 255;
-    unsigned intensity_low = 64;
+    // unsigned intensity_high = 255;
+    // unsigned intensity_low = 64;
+    unsigned intensity_last = 0;
 
     void OnAccess(const Item* a, bool with_delay) override {
         if (a < array.data() || a >= array.data() + array_size)
@@ -823,6 +825,13 @@ public:
             delay_micros(delay_time);
         if (DelayHook)
             DelayHook();
+
+        if (intensity_last != strip_.intensity()) {
+            intensity_last = strip_.intensity();
+            for (size_t i = 0; i < array_size; ++i) {
+                flash_low(i);
+            }
+        }
     }
 
     void yield_delay() {
@@ -836,16 +845,23 @@ public:
             strip_.setPixel(i, 0);
         else
             strip_.setPixel(
-                i, HSVColor(value_to_hue(array[i].value_), 255, intensity_low));
+                i, HSVColor(value_to_hue(array[i].value_), 255,
+                            strip_.intensity()));
     }
 
     void flash_high(size_t i) {
+        size_t intensity_high = strip_.intensity();
+        intensity_high *= 4;
+        if (intensity_high > 255)
+            intensity_high = 255;
+
         if (array[i].value_ == black) {
             strip_.setPixel(i, Color(intensity_high));
         }
         else {
-            Color c = HSVColor(value_to_hue(array[i].value_), 255, intensity_high);
-            c.white = 128;
+            Color c = HSVColor(
+                value_to_hue(array[i].value_), 255, intensity_high);
+            c.white = intensity_high / 2;
             strip_.setPixel(i, c);
         }
     }
