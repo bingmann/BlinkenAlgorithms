@@ -11,12 +11,16 @@
 
 #include <BlinkenAlgorithms/Color.hpp>
 #include <BlinkenAlgorithms/Control.hpp>
+#include <BlinkenAlgorithms/RunAnimation.hpp>
 
 #include <cmath>
 #include <random>
 
 namespace BlinkenAlgorithms {
 
+/*!
+ * 1 Pixel RGBW shifts by one pixel each frame.
+ */
 template <typename LEDStrip>
 class ColorWipeRGBW
 {
@@ -45,6 +49,9 @@ public:
     }
 };
 
+/*!
+ * 3 Pixel in two colors shift in a sine wave
+ */
 template <typename LEDStrip>
 class ColorWipeTwoSine
 {
@@ -64,7 +71,7 @@ public:
         if (s == 0)
             xf = 0;
 
-        xf += 0.2 + 1.5 * sin(static_cast<float>(s) / M_PI / 4.0);
+        xf += 0.2 + 3.5 * sin(static_cast<float>(s) / M_PI / 16.0);
         size_t x = static_cast<size_t>(xf);
 
         for (size_t i = 0; i < strip_size; i += 6) {
@@ -76,10 +83,13 @@ public:
             strip_.setPixel((i + x + 5 + strip_size) % strip_size, c1);
         }
 
-        return 50000;
+        return 100000;
     }
 };
 
+/*!
+ * Display the colors of the WheelColor method for testing
+ */
 template <typename LEDStrip>
 class WheelColorTest
 {
@@ -100,37 +110,71 @@ public:
     }
 };
 
+/*!
+ * Cycle the colors of the WheelColor method in each frame.
+ */
 template <typename LEDStrip>
-class HSVColorTest
+class WheelColorWheel
 {
 public:
-    HSVColorTest(LEDStrip& strip) : strip_(strip) { }
+    WheelColorWheel(LEDStrip& strip, size_t speed = 2000)
+        : strip_(strip), speed_(speed) { }
 
     LEDStrip& strip_;
+    size_t speed_;
 
     uint32_t operator () (uint32_t s) {
         size_t strip_size = strip_.size();
         unsigned intensity = strip_.intensity();
 
-        // for (size_t i = 0; i < strip_size; ++i) {
-        //     strip_.setPixel(i, HSVColor(i + s, 255, intensity));
-        // }
-        Color c = HSVColor((s * 10) % HSV_HUE_MAX, 255, intensity);
         for (size_t i = 0; i < strip_size; ++i) {
-            strip_.setPixel(i, c);
+            size_t j = i / 300;
+            strip_.setPixel(
+                i, WheelColor((s + j * 256 / 5) % 256, intensity));
         }
 
-        return 20000;
+        return speed_;
     }
 };
 
+/*!
+ * Display the colors of the HSVColor method for testing
+ */
+template <typename LEDStrip>
+class HSVColorTest
+{
+public:
+    HSVColorTest(LEDStrip& strip, size_t speed = 20000)
+        : strip_(strip), speed_(speed) { }
+
+    LEDStrip& strip_;
+    size_t speed_;
+
+    uint32_t operator () (uint32_t s) {
+        size_t strip_size = strip_.size();
+        unsigned intensity = strip_.intensity();
+
+        for (size_t i = 0; i < strip_size; ++i) {
+            Color c = HSVColor(i % HSV_HUE_MAX, 255, intensity);
+            strip_.setPixel(i, c);
+        }
+
+        return speed_;
+    }
+};
+
+/*!
+ * Cycle the colors of the HSVColor method in each frame.
+ */
 template <typename LEDStrip>
 class HSVColorWheel
 {
 public:
-    HSVColorWheel(LEDStrip& strip) : strip_(strip) { }
+    HSVColorWheel(LEDStrip& strip, size_t speed = 200)
+        : strip_(strip), speed_(speed) { }
 
     LEDStrip& strip_;
+    size_t speed_;
 
     uint32_t operator () (uint32_t s) {
         size_t strip_size = strip_.size();
@@ -143,9 +187,11 @@ public:
                             255, intensity));
         }
 
-        return 200;
+        return speed_;
     }
 };
+
+/******************************************************************************/
 
 template <typename LEDStrip>
 class Strobo1
@@ -163,21 +209,59 @@ public:
             strip_.setPixel(i, 0);
         strip_.show();
 
-        for (uint32_t s = 0; ; ++s) {
+        for (uint32_t s = 0; s < 4000 / 80; ++s) {
             for (size_t i = 0; i < strip_size; ++i) {
                 strip_.setPixel(i, Color(intensity));
             }
             strip_.show();
-            strip_.delay(25);
+            delay(40);
 
             for (size_t i = 0; i < strip_size; ++i) {
                 strip_.setPixel(i, Color(0));
             }
             strip_.show();
-            strip_.delay(25);
+            delay(40);
         }
 
-        return 0;
+        return EndAnimation;
+    }
+};
+
+template <typename LEDStrip>
+class Strobo2
+{
+public:
+    Strobo2(LEDStrip& strip) : strip_(strip) { }
+
+    LEDStrip& strip_;
+
+    uint32_t operator () (uint32_t s) {
+        size_t strip_size = strip_.size();
+        unsigned intensity = strip_.intensity();
+
+        for (size_t i = 0; i < strip_size; ++i)
+            strip_.setPixel(i, 0);
+        strip_.show();
+
+        for (uint32_t r = 0; r < 3; ++r) {
+            for (uint32_t s = 0; s < 4000 / 100 / 3; ++s) {
+                for (size_t i = 0; i < strip_size; ++i) {
+                    strip_.setPixel(i, Color(intensity));
+                }
+                strip_.show();
+                delay(60);
+
+                for (size_t i = 0; i < strip_size; ++i) {
+                    strip_.setPixel(i, Color(0));
+                }
+                strip_.show();
+                delay(60);
+            }
+
+            delay(600);
+        }
+
+        return EndAnimation;
     }
 };
 
@@ -226,10 +310,11 @@ template <typename LEDStrip>
 class SparkleRGB
 {
 public:
-    SparkleRGB(LEDStrip& strip, size_t speed = 100, size_t density = 10)
+    SparkleRGB(LEDStrip& strip, size_t speed = 100, size_t density = 10,
+               size_t multi = 1)
         : strip_(strip),
           seed_(static_cast<uint32_t>(random(10000000))),
-          speed_(speed), density_(density) { }
+          speed_(speed), density_(density), multi_(multi) { }
 
     LEDStrip& strip_;
 
@@ -239,6 +324,7 @@ public:
 
     size_t speed_;
     size_t density_;
+    size_t multi_;
 
     std::default_random_engine rng1{ seed_ };
     std::default_random_engine rng2{ seed_ };
@@ -248,13 +334,12 @@ public:
         size_t strip_size = strip_.size();
         unsigned intensity = strip_.intensity();
 
-        if (s % 2 == 0) {
+        for (size_t r = 0; r < multi_; ++r) {
             strip_.setPixel(
                 rng1() % strip_size, WheelColor(rng3(), intensity));
-        }
-        else {
+
             if (pix >= strip_size / density_)
-                strip_.setPixel(rng2() % strip_size, 0);
+                strip_.setPixel(rng2() % strip_size, Color(0));
             else
                 ++pix;
         }
@@ -262,6 +347,8 @@ public:
         return speed_;
     }
 };
+
+/******************************************************************************/
 
 template <typename Strip>
 void setPixelFireColor(Strip& strip, int index, uint8_t temperature) {
@@ -490,6 +577,8 @@ public:
         float pos;
         float speed;
         Color color = Color(0);
+        uint8_t hue;
+        uint8_t intensity;
     };
 
     LEDStrip& strip_;
@@ -502,7 +591,7 @@ public:
     size_t density_ratio_;
 
     SprayColor(LEDStrip& strip, unsigned origin = 0,
-               uint32_t speed = 30000, size_t density_ratio = 5)
+               uint32_t speed = 30000, size_t density_ratio = 6)
         : strip_(strip), origin_(origin), speed_(speed),
           density_ratio_(density_ratio) {
         pixis_.resize(strip.size() / density_ratio_);
@@ -512,7 +601,7 @@ public:
         size_t strip_size = strip_.size();
         size_t strip_parts = 1;
 
-        if (random(density_ratio_) == 0) {
+        if (random(density_ratio_) <= 2) {
             // make new pixi
             if (free_ < pixis_.size()) {
                 Pixi& p = pixis_[free_++];
@@ -520,23 +609,35 @@ public:
                 p.part = random(strip_parts);
                 int rndsel = random(2);
                 if (origin_ == 0 || (origin_ == 2 && rndsel % 2 == 0)) {
-                    p.pos = 0;
+                    p.pos = random(strip_size / 4) - strip_size / 8.0;
+                    if (p.pos < 0)
+                        p.pos = 0;
                     p.speed = 1.0 + random(10) / 10.0;
                 }
                 else if (origin_ == 1 || (origin_ == 2 && rndsel % 2 == 1)) {
-                    p.pos = strip_size - 1;
+                    p.pos = strip_size - 1 -
+                            (random(strip_size / 4) - strip_size / 8.0);
+                    if (p.pos > strip_size - 1)
+                        p.pos = strip_size - 1;
                     p.speed = -(1.0 + random(10) / 10.0);
                 }
 
-                p.color = WheelColor(random(256), strip_.intensity());
+                p.hue = random(256);
+                p.intensity = strip_.intensity();
+                p.color = WheelColor(p.hue, p.intensity);
             }
         }
 
         for (size_t i = 0; i < strip_size; ++i) {
             strip_.setPixel(i, 0);
         }
+        uint8_t intensity = strip_.intensity();
         for (size_t i = 0; i < free_; ++i) {
             Pixi& p = pixis_[i];
+            if (p.intensity != intensity) {
+                p.intensity = intensity;
+                p.color = WheelColor(p.hue, p.intensity);
+            }
             strip_.setPixel(p.part * strip_size + p.pos, p.color);
             p.pos += p.speed;
             if (p.pos < 0 || p.pos >= strip_size) {
@@ -561,7 +662,8 @@ template <typename LEDStrip>
 class Fireworks
 {
 public:
-    static const size_t cracks = 24;
+    static const size_t cracks = 16;
+
     struct Pixi {
         bool on;
         unsigned part;
@@ -569,6 +671,8 @@ public:
         float speed[cracks];
         size_t ts, ts_end;
         Color color = Color(0);
+        uint8_t hue;
+        uint8_t intensity;
     };
 
     LEDStrip& strip_;
@@ -581,7 +685,7 @@ public:
     Fireworks(LEDStrip& strip)
         : strip_(strip),
           rng(/* seed */ static_cast<uint32_t>(random(10000000))) {
-        pixis_.resize(10);
+        pixis_.resize(strip_.size() / cracks / 10);
     }
 
     uint32_t operator () (uint32_t /* s */) {
@@ -597,28 +701,36 @@ public:
                     break;
             }
             if (j < pixis_.size()) {
-                pixis_[j].on = true;
-                pixis_[j].part = random(strip_parts);
-                pixis_[j].pos = random(strip_size);
-                float size = 20.0 + random(10000) / 1000.0;
+                Pixi& p = pixis_[j];
+
+                p.on = true;
+                p.part = random(strip_parts);
+                p.pos = random(strip_size);
+                float size = 10.0 + random(10000) / 1000.0;
                 for (size_t k = 0; k < cracks; ++k) {
-                    pixis_[j].speed[k] = norm(rng) * size;
+                    p.speed[k] = norm(rng) * size;
                 }
-                pixis_[j].ts = 0;
-                pixis_[j].ts_end = 80 + random(160);
-                pixis_[j].color =
-                    WheelColor(random(256), strip_.intensity());
+                p.ts = 0;
+                p.ts_end = 40 + random(120);
+                p.hue = random(256);
+                p.intensity = strip_.intensity();
+                p.color = WheelColor(p.hue, p.intensity);
             }
         }
 
         for (size_t i = 0; i < strip_size; ++i) {
             strip_.setPixel(i, 0);
         }
+        uint8_t intensity = strip_.intensity();
         for (size_t i = 0; i < pixis_.size(); ++i) {
             if (!pixis_[i].on)
                 continue;
 
             Pixi& p = pixis_[i];
+            if (p.intensity != intensity) {
+                p.intensity = intensity;
+                p.color = WheelColor(p.hue, p.intensity);
+            }
             for (size_t k = 0; k < cracks; ++k) {
                 ssize_t x = p.pos + p.speed[k] * sin(p.ts * M_PI / p.ts_end);
                 if (x >= 0 && x < ssize_t(strip_size))
@@ -630,7 +742,160 @@ public:
                 p.on = false;
         }
 
-        return 500;
+        return 50;
+    }
+};
+
+/******************************************************************************/
+
+template <typename LEDStrip, bool TrueHSV = false>
+struct KnightSnakes {
+
+    KnightSnakes(LEDStrip& strip, size_t speed, size_t max_snakes)
+        : strip_(strip), speed_(speed), max_snakes_(max_snakes) {
+        snakes_.resize(max_snakes);
+    }
+
+    LEDStrip& strip_;
+    size_t speed_;
+    size_t max_snakes_;
+
+    size_t num_snakes = 0;
+
+    struct Snake {
+        double speed;
+        uint32_t start;
+        uint8_t length;
+        uint16_t hue;
+    };
+    std::vector<Snake> snakes_;
+
+    size_t operator () (uint32_t s) {
+        size_t strip_size = strip_.size();
+
+        if (s % 8 == 0 && num_snakes < max_snakes_) {
+            Snake& sk = snakes_[num_snakes++];
+            sk.speed = 0.5 + random(32) / 16.0;
+            if (TrueHSV)
+                sk.hue = random(HSV_HUE_MAX);
+            else
+                sk.hue = random(255);
+            sk.start = s * sk.speed + random(strip_size);
+            sk.length = 8 + random(32);
+        }
+
+        for (size_t i = 0; i < strip_size; ++i)
+            strip_.setPixel(i, 0);
+
+        for (size_t i = 0; i < num_snakes; ++i) {
+            Snake& sk = snakes_[i];
+
+            for (size_t j = 0; j < sk.length; ++j) {
+                size_t x =
+                    ((size_t)(s * sk.speed) - sk.start + j) % (2 * strip_size);
+
+                // Color col = sk.color;
+                // Color col(sk.color.r * j / sk.length,
+                //           sk.color.g * j / sk.length,
+                //           sk.color.b * j / sk.length);
+                Color col;
+                if (TrueHSV) {
+                    col = HSVColor(
+                        sk.hue, 255, strip_.intensity() * j / sk.length);
+                }
+                else {
+                    col = WheelColor(
+                        sk.hue, strip_.intensity() * j / sk.length);
+                }
+
+                if (x < strip_size)
+                    strip_.orPixel(x, col);
+                else
+                    strip_.orPixel(2 * strip_size - x, col);
+            }
+        }
+
+        return speed_;
+    }
+};
+
+/******************************************************************************/
+
+template <typename LEDStrip>
+class PulseColor
+{
+public:
+    struct Pixi {
+        bool on;
+        unsigned part;
+        float pos;
+        float speed;
+        float size;
+        size_t ts, ts_end;
+        uint16_t hue;
+    };
+
+    LEDStrip& strip_;
+
+    std::vector<Pixi> pixis_;
+
+    std::default_random_engine rng;
+    std::normal_distribution<float> norm;
+
+    PulseColor(LEDStrip& strip)
+        : strip_(strip),
+          rng(/* seed */ static_cast<uint32_t>(random(10000000))) {
+        pixis_.resize(60);
+    }
+
+    uint32_t operator () (uint32_t /* s */) {
+        size_t strip_size = strip_.size();
+        size_t strip_parts = 1;
+
+        if (random(12) < 4)
+        {
+            // make new pixi
+            size_t j;
+            for (j = 0; j < pixis_.size(); ++j) {
+                if (pixis_[j].on == false)
+                    break;
+            }
+            if (j < pixis_.size()) {
+                Pixi& p = pixis_[j];
+
+                p.on = true;
+                p.part = random(strip_parts);
+                p.pos = random(strip_size);
+                p.size = 1.0 + random(20000) / 1000.0;
+                p.speed = norm(rng) * p.size;
+                p.ts = 0;
+                p.ts_end = 60 + random(60);
+                p.hue = random(HSV_HUE_MAX);
+            }
+        }
+
+        for (size_t i = 0; i < strip_size; ++i) {
+            strip_.setPixel(i, 0);
+        }
+        uint8_t intensity = strip_.intensity();
+        for (size_t i = 0; i < pixis_.size(); ++i) {
+            if (!pixis_[i].on)
+                continue;
+
+            Pixi& p = pixis_[i];
+
+            Color color = HSVColor(
+                p.hue, 255, intensity * sin(p.ts * M_PI / p.ts_end));
+            for (size_t k = 0; k < p.size; ++k) {
+                strip_.orPixel(p.part * strip_size + p.pos + k - p.size / 2.0, color);
+            }
+
+            p.ts++;
+            if (p.ts >= p.ts_end)
+                p.on = false;
+        }
+
+        return 40;
     }
 };
 
@@ -698,6 +963,147 @@ protected:
     size_t blinks_age[max_blinks];
     size_t blinks_hue[max_blinks];
 };
+
+template <typename LEDStrip>
+class CountPattern
+{
+public:
+    CountPattern(LEDStrip& strip) : strip_(strip) { }
+
+    LEDStrip& strip_;
+
+    uint32_t operator () (uint32_t /* s */) {
+        size_t strip_size = strip_.size();
+        unsigned intensity = strip_.intensity();
+
+        for (size_t i = 0; i < strip_size; ++i) {
+            strip_.setPixel(i, 0);
+        }
+
+        Color colors[] = {
+            Color(intensity, 0, 0),
+            Color(0, intensity, 0),
+            Color(0, 0, intensity),
+            Color(intensity, 0, intensity),
+            Color(0, intensity, intensity),
+        };
+
+        for (size_t i = 0; i < strip_size / 10; ++i) {
+            strip_.setPixel(i * 10 + 0, Color(intensity));
+        }
+        for (size_t i = 0; i < strip_size / 10; ++i) {
+            strip_.setPixel(i * 10 + 1, colors[i % 5]);
+        }
+        for (size_t i = 0; i < strip_size / 10; ++i) {
+            strip_.setPixel(i * 10 + 2, colors[(i / 10) % 5]);
+        }
+
+        return 20000;
+    }
+};
+
+/******************************************************************************/
+
+template <typename LEDStrip>
+void RunRandomFluxAnimations(LEDStrip& strip) {
+    static const size_t time_limit = 20000;
+
+    while (1) {
+        for (size_t i = 0; i < strip.size(); ++i)
+            strip.setPixel(i, 0);
+
+        size_t a = random(15);
+        // a = 15;
+        switch (a) {
+        case 0:
+            RunAnimation(
+                ColorWipeRGBW<LEDStrip>(strip),
+                time_limit);
+            break;
+        case 1:
+            RunAnimation(
+                ColorWipeTwoSine<LEDStrip>(strip),
+                time_limit);
+            break;
+        case 2:
+            RunAnimation(
+                WheelColorWheel<LEDStrip>(strip),
+                time_limit);
+            break;
+        case 3:
+            RunAnimation(
+                HSVColorWheel<LEDStrip>(strip),
+                time_limit);
+            break;
+
+        case 4:
+            RunAnimation(
+                SparkleWhite<LEDStrip>(strip),
+                time_limit);
+            break;
+        case 5:
+            RunAnimation(
+                SparkleWhite<LEDStrip>(strip, /* speed */ 2000, /* density */ 5),
+                time_limit);
+            break;
+        case 6:
+            RunAnimation(
+                SparkleRGB<LEDStrip>(strip),
+                time_limit);
+            break;
+        case 7:
+            RunAnimation(
+                SparkleRGB<LEDStrip>(strip, /* speed */ 2000, /* density */ 5),
+                time_limit);
+            break;
+
+        case 8:
+            RunAnimation(
+                Fire<LEDStrip>(strip),
+                time_limit);
+            break;
+        case 9:
+            RunAnimation(
+                FireIce<LEDStrip>(strip),
+                time_limit);
+            break;
+
+        case 10:
+            RunAnimation(
+                SprayColor<LEDStrip>(strip, /* reverse */ false),
+                time_limit);
+            break;
+        case 11:
+            RunAnimation(
+                SprayColor<LEDStrip>(strip, /* reverse */ true),
+                time_limit);
+            break;
+
+        case 12:
+            RunAnimation(
+                Fireworks<LEDStrip>(strip),
+                time_limit);
+            break;
+        case 13:
+            RunAnimation(
+                KnightSnakes<LEDStrip, /* TrueHSV */ true>(strip, 25000, 40),
+                time_limit);
+            break;
+        case 14:
+            RunAnimation(
+                PulseColor<LEDStrip>(strip),
+                time_limit);
+            break;
+            // case 15:
+            //     RunAnimation(
+            //         Starlight<LEDStrip>(strip),
+            //         time_limit);
+            //     break;
+        }
+    }
+}
+
+/******************************************************************************/
 
 } // namespace BlinkenAlgorithms
 

@@ -17,10 +17,10 @@
 using namespace BlinkenAlgorithms;
 
 // four element pixels, RGBW SK6812 strip
-NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> strip(/* strip_size */ 300);
+NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> base_strip(/* strip_size */ 300);
 
 // APA102 "DotStar" strip
-// NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> strip(/* array_size */ 5 * 96);
+// NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> base_strip(/* array_size */ 5 * 96);
 
 /*----------------------------------------------------------------------------*/
 // other strip configuration variants
@@ -56,8 +56,8 @@ NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> strip(/* strip_size */ 3
 
 /*----------------------------------------------------------------------------*/
 
-using MyStrip = NeoPixelBusAdapter<decltype(strip)>;
-MyStrip my_strip(strip);
+using MyStrip = NeoPixelBusAdapter<decltype(base_strip)>;
+MyStrip strip(base_strip);
 
 /******************************************************************************/
 
@@ -69,70 +69,11 @@ void setup() {
     Serial.begin(115200);
 
     randomSeed(analogRead(0));
-    strip.Begin();
+    base_strip.Begin();
 }
 
 void loop() {
-    static const size_t time_limit = 20000;
-
-    while (1) {
-        for (size_t i = 0; i < my_strip.size(); ++i)
-            my_strip.setPixel(i, 0);
-
-        size_t a = random(10);
-        switch (a) {
-        case 0:
-            RunAnimation(
-                ColorWipeRGBW<MyStrip>(my_strip),
-                time_limit);
-            break;
-        case 1:
-            RunAnimation(
-                ColorWipeTwoSine<MyStrip>(my_strip),
-                time_limit);
-            break;
-        case 2:
-            RunAnimation(
-                WheelColorTest<MyStrip>(my_strip),
-                time_limit);
-            break;
-        case 3:
-            RunAnimation(
-                HSVColorTest<MyStrip>(my_strip),
-                time_limit);
-            break;
-        case 4:
-            RunAnimation(
-                SparkleWhite<MyStrip>(my_strip),
-                time_limit);
-            break;
-        case 5:
-            RunAnimation(
-                SparkleRGB<MyStrip>(my_strip),
-                time_limit);
-            break;
-        case 6:
-            RunAnimation(
-                Fire<MyStrip>(my_strip),
-                time_limit);
-            break;
-        case 7:
-            RunAnimation(
-                FireIce<MyStrip>(my_strip),
-                time_limit);
-            break;
-        case 8:
-            RunAnimation(
-                SprayColor<MyStrip>(my_strip),
-                time_limit);
-            break;
-        case 9:
-            RunAnimation(
-                Fireworks<MyStrip>(my_strip),
-                time_limit);
-            break;
-        }
-    }
+    RunRandomFluxAnimations(strip);
 }
 
 /******************************************************************************/
