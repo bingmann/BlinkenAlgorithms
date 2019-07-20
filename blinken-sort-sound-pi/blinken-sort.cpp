@@ -32,7 +32,7 @@ PiSPI_APA102 my_strip(
 bool g_terminate = false;
 size_t g_delay_factor = 1000;
 
-MAX7219 led_matrix("/dev/spidev0.0", /* cs_pin */ 23);
+MAX7219 led_matrix("/dev/spidev1.0", /* cs_pin */ 23);
 Font5x5 mfont;
 
 const char* s_algo_name = "";
@@ -59,7 +59,7 @@ enum class Mode {
     Random,
     RandomSort,
     RandomHash,
-    Black,
+    Blank,
     InsertionSort,
     QuickSortFast,
     QuickSortSlow,
@@ -98,7 +98,7 @@ PROCESS:
         }
         else if ((ev.code == 82 || ev.code == 110) && ev.value == RELEASED) {
             // 0 released
-            SwitchTo(Mode::Black);
+            SwitchTo(Mode::Blank);
         }
         else if ((ev.code == 79 || ev.code == 107) && ev.value == RELEASED) {
             // 1 released
@@ -239,7 +239,9 @@ int main() {
                 wait_millis(3000);
                 break;
 
-            case Mode::Black:
+            case Mode::Blank:
+                s_algo_name = "";
+                OnComparisonCount(0);
                 for (size_t i = 0; i < my_strip.size(); ++i) {
                     my_strip.setPixel(i, 0);
                 }
