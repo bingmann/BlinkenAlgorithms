@@ -12,13 +12,18 @@
 #include <BlinkenAlgorithms/RunAnimation.hpp>
 #include <BlinkenAlgorithms/Strip/NeoPixelBusAdapter.hpp>
 
+/******************************************************************************/
+
+using namespace BlinkenAlgorithms;
+
 // four element pixels, RGBW SK6812 strip
 NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> strip(/* strip_size */ 300);
 
 // APA102 "DotStar" strip
 // NeoPixelBus<DotStarBgrFeature, DotStarSpiMethod> strip(/* array_size */ 5 * 96);
 
-/******************************************************************************/
+/*----------------------------------------------------------------------------*/
+// other strip configuration variants
 
 // three element pixels, in different order and speeds
 // NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount, PixelPin);
@@ -49,6 +54,12 @@ NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> strip(/* strip_size */ 3
 // NeoPixelBus<NeoGrbFeature, NeoEsp8266BitBang800KbpsMethod> strip(PixelCount, PixelPin);
 // NeoPixelBus<NeoRgbFeature, NeoEsp8266BitBang400KbpsMethod> strip(PixelCount, PixelPin);
 
+/*----------------------------------------------------------------------------*/
+
+NeoPixelBusAdapter<decltype(strip)> my_strip(strip);
+
+/******************************************************************************/
+
 bool g_terminate = false;
 
 void delay_poll() { }
@@ -60,11 +71,7 @@ void setup() {
     strip.Begin();
 }
 
-using namespace BlinkenAlgorithms;
-
 void loop() {
-    NeoPixelBusAdapter<decltype(strip)> my_strip(strip);
-
     static const size_t time_limit = 20000;
 
     while (1) {

@@ -14,9 +14,9 @@ using namespace BlinkenAlgorithms;
 
 PiSPI_APA102 my_strip("/dev/spidev0.0", /* strip_size */ 5 * 96);
 
-void delay_poll() { }
-
 bool g_terminate = false;
+
+void delay_poll() { }
 
 int main() {
     srandom(time(nullptr));
