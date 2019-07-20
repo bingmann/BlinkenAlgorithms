@@ -11,7 +11,7 @@ set -e
 
 for p in *-esp8266 *-teensy; do
     pushd $p
-    pio run
+    platformio run
     popd
 done
 
