@@ -42,11 +42,10 @@ void RunRandomAlgorithmAnimation(LEDStrip& strip) {
         RunSort(strip, "Cocktail-Shaker Sort", CocktailShakerSort, -52);
         break;
     case 4:
-        // RunSort(strip, "QuickSort (LR)\nHoare", QuickSortLR, r * 500);
         RunSort(strip, "QuickSort (LR)\nHoare", QuickSortLR, -21);
         break;
     case 5:
-        RunSort(strip, "QuickSort (LL)\nLomoto", QuickSortLL, 500);
+        RunSort(strip, "QuickSort (LL)\nLomoto", QuickSortLL, 2000);
         break;
     case 6:
         RunSort(strip, "QuickSort\nDual Pivot", QuickSortDualPivot, 2000);

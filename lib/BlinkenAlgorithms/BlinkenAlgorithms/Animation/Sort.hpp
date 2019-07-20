@@ -42,10 +42,24 @@ public:
 
     explicit Item(const value_type& d) : value_(d) { OnAccess(this); }
 
-    Item(const Item& v) : value_(v.value_) { OnAccess(this); }
+    Item(const Item& v) : value_(v.value_) {
+        OnAccess(this);
+    }
+
+    Item(Item&& v) : value_(v.value_) {
+        v.value_ = black;
+        OnAccess(this);
+    }
 
     Item& operator = (const Item& a) {
         value_ = a.value_;
+        OnAccess(this);
+        return *this;
+    }
+
+    Item& operator = (Item&& a) {
+        value_ = a.value_;
+        a.value_ = black;
         OnAccess(this);
         return *this;
     }
