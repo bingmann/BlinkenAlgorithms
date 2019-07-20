@@ -1,5 +1,5 @@
 /*******************************************************************************
- * random-flux-loop-esp8266/src/neopixel.cpp
+ * blinken-sort-esp8266/src/blinken-sort.cpp
  *
  * Copyright (C) 2018 Timo Bingmann <tb@panthema.net>
  *
@@ -8,8 +8,7 @@
 
 #include <Arduino.h>
 
-#include <BlinkenAlgorithms/Animation/Flux.hpp>
-#include <BlinkenAlgorithms/RunAnimation.hpp>
+#include <BlinkenAlgorithms/Animation/RandomAlgorithm.hpp>
 #include <BlinkenAlgorithms/Strip/NeoPixelBusAdapter.hpp>
 
 // four element pixels, RGBW SK6812 strip
@@ -50,8 +49,7 @@ NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> strip(/* strip_size */ 3
 // NeoPixelBus<NeoRgbFeature, NeoEsp8266BitBang400KbpsMethod> strip(PixelCount, PixelPin);
 
 bool g_terminate = false;
-
-void delay_poll() { }
+size_t g_delay_factor = 1000;
 
 void setup() {
     Serial.begin(115200);
@@ -64,47 +62,7 @@ using namespace BlinkenAlgorithms;
 
 void loop() {
     NeoPixelBusAdapter<decltype(strip)> my_strip(strip);
-
-    static const size_t time_limit = 20000;
-
-    while (1) {
-        for (size_t i = 0; i < my_strip.size(); ++i)
-            my_strip.setPixel(i, 0);
-
-        size_t a = random(10);
-        switch (a) {
-        case 0:
-            RunAnimation<ColorWipeRGBW>(my_strip, time_limit);
-            break;
-        case 1:
-            RunAnimation<ColorWipeTwoSine>(my_strip, time_limit);
-            break;
-        case 2:
-            RunAnimation<WheelColorTest>(my_strip, time_limit);
-            break;
-        case 3:
-            RunAnimation<HSVColorTest>(my_strip, time_limit);
-            break;
-        case 4:
-            RunAnimation<SparkleWhite>(my_strip, time_limit);
-            break;
-        case 5:
-            RunAnimation<SparkleRGB>(my_strip, time_limit);
-            break;
-        case 6:
-            RunAnimation<Fire>(my_strip, time_limit);
-            break;
-        case 7:
-            RunAnimation<FireIce>(my_strip, time_limit);
-            break;
-        case 8:
-            RunAnimation<SprayColor>(my_strip, time_limit);
-            break;
-        case 9:
-            RunAnimation<Fireworks>(my_strip, time_limit);
-            break;
-        }
-    }
+    RunRandomAlgorithmAnimation(my_strip);
 }
 
 /******************************************************************************/

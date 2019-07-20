@@ -1,5 +1,5 @@
 ################################################################################
-# random-flux-loop-pi/CMakeLists.txt
+# blinken-sort-pi/CMakeLists.txt
 #
 # Copyright (C) 2018 Timo Bingmann <tb@panthema.net>
 #
@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(neopixel)
+project(blinken-sort)
 
 # prohibit in-source builds
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
@@ -63,11 +63,11 @@ find_package(Threads)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib/BlinkenAlgorithms)
 
-add_executable(neopixel
-  neopixel.cpp
+add_executable(blinken-sort
+  blinken-sort.cpp
   )
 
-target_link_libraries(neopixel
+target_link_libraries(blinken-sort
   ${CMAKE_THREAD_LIBS_INIT}
   )
 

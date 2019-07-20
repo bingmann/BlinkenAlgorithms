@@ -6,11 +6,11 @@
  * All rights reserved. Published under the GNU General Public License v3.0
  ******************************************************************************/
 
-#include <NeoAnimation/Animation/Flux.hpp>
-#include <NeoAnimation/RunAnimation.hpp>
-#include <NeoAnimation/Strip/PiSPI_APA102.hpp>
+#include <BlinkenAlgorithms/Animation/Flux.hpp>
+#include <BlinkenAlgorithms/RunAnimation.hpp>
+#include <BlinkenAlgorithms/Strip/PiSPI_APA102.hpp>
 
-using namespace NeoAnimation;
+using namespace BlinkenAlgorithms;
 
 PiSPI_APA102 my_strip("/dev/spidev0.0", /* strip_size */ 5 * 96);
 

@@ -7,13 +7,13 @@
  ******************************************************************************/
 
 #include <Arduino.h>
-#include <NeoAnimation/Porting/Teensy.hpp>
+#include <BlinkenAlgorithms/Porting/Teensy.hpp>
 
 /******************************************************************************/
 
-#include <NeoAnimation/Animation/Flux.hpp>
-#include <NeoAnimation/RunAnimation.hpp>
-#include <NeoAnimation/Strip/OctoSK6812Adapter.hpp>
+#include <BlinkenAlgorithms/Animation/Flux.hpp>
+#include <BlinkenAlgorithms/RunAnimation.hpp>
+#include <BlinkenAlgorithms/Strip/OctoSK6812Adapter.hpp>
 
 static const size_t strip_size = 300;
 
@@ -22,7 +22,7 @@ int drawMemory[strip_size * 8];
 
 OctoSK6812 strip(strip_size, displayMemory, drawMemory, SK6812_GRBW);
 
-using SK6812 = NeoAnimation::OctoSK6812Adapter<OctoSK6812>;
+using SK6812 = BlinkenAlgorithms::OctoSK6812Adapter<OctoSK6812>;
 SK6812 my_strip(strip, /* active_parts */ 4);
 
 /******************************************************************************/
@@ -82,7 +82,7 @@ void setup() {
     strip.begin();
 }
 
-using namespace NeoAnimation;
+using namespace BlinkenAlgorithms;
 
 void loop() {
     static const size_t time_limit = 200000;

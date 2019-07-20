@@ -269,7 +269,7 @@ sub process_cpp {
 
         # construct include guard macro name: PROGRAM_FILE_NAME_HEADER
         my $guard = $path;
-        $guard =~ s!^lib/!!;
+        $guard =~ s!^lib/BlinkenAlgorithms/!!;
         $guard =~ tr!/-!__!;
         $guard =~ s!\.h(pp)?(\.in)?$!!;
         $guard = uc($guard)."_HEADER";
@@ -484,8 +484,8 @@ foreach my $arg (@ARGV) {
     }
 }
 
-(-e "lib/NeoAnimation")
-    or die("Please run this script in the NeoAnimation source base directory.");
+(-e "lib/BlinkenAlgorithms")
+    or die("Please run this script in the BlinkenAlgorithms source base directory.");
 
 # check uncrustify's version:
 my ($uncrustver) = filter_program("", $uncrustify, "--version");

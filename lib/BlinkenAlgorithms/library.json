@@ -1,0 +1,19 @@
+{
+    "name": "BlinkenAlgorithms",
+    "version": "0.0.1",
+    "description": "Algorithms and Animations for Neopixel / WS8212B / SK6812 / APA102 LEDs on ESP8266, Teensy, or Raspberry Pi",
+    "keywords": "led, neopixel, algorithms, sorting, animations",
+    "authors":
+    {
+        "name": "Timo Bingmann",
+        "email": "tbgit@panthema.net",
+        "url": "https://panthema.net"
+    },
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/bingmann/BlinkenAlgorithms.git"
+    },
+    "frameworks": "arduino",
+    "platforms": "*"
+}
