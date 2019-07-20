@@ -67,7 +67,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 ################################################################################
 ### Compile Programs
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib/LEDAlgoAnimation)
 
 add_executable(neopixel
   neopixel.cpp

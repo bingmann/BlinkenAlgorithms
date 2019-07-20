@@ -11,12 +11,14 @@ set -e
 
 for p in *-esp8266 *-teensy; do
     pushd $p
+    rm -rf .pio
     platformio run
     popd
 done
 
 for p in *-pi; do
     pushd $p
+    rm -rf b
     [ -e b ] || (mkdir b && cd b && cmake .. && cd ..)
     make -C b -j4
     popd;
