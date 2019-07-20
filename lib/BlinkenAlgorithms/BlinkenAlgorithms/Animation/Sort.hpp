@@ -202,7 +202,7 @@ void SelectionSort(Item* A, size_t n) {
 // Insertion Sort
 
 void InsertionSort(Item* A, size_t n) {
-    for (size_t i = 1; i < n; ++i) {
+    for (size_t i = 1; i < n && !g_terminate; ++i) {
         Item key = A[i];
 
         ssize_t j = i - 1;
@@ -305,11 +305,14 @@ ssize_t QuickSortSelectPivot(Item* A, ssize_t lo, ssize_t hi) {
 // Quick Sort LR (pointers left and right, Hoare's partition schema)
 
 void QuickSortLR(Item* A, ssize_t lo, ssize_t hi) {
+    if (g_terminate)
+        return;
+
     ssize_t p = QuickSortSelectPivot(A, lo, hi + 1);
 
     ssize_t i = lo, j = hi;
 
-    while (i <= j) {
+    while (i <= j && !g_terminate) {
         while (A[i] < A[p])
             i++;
         while (A[j] > A[p])
@@ -430,7 +433,7 @@ void Merge(Item* A, size_t lo, size_t mid, size_t hi) {
 
     // merge
     size_t i = lo, j = mid, o = 0; // first and second halves
-    while (i < mid && j < hi) {
+    while (i < mid && j < hi && !g_terminate) {
         // copy out for fewer time steps
         Item ai = A[i], aj = A[j];
 
@@ -444,11 +447,14 @@ void Merge(Item* A, size_t lo, size_t mid, size_t hi) {
         out[o++] = A[j++];
 
     // copy back
-    for (i = 0; i < hi - lo; ++i)
+    for (i = 0; i < hi - lo && !g_terminate; ++i)
         A[lo + i] = out[i];
 }
 
 void MergeSort(Item* A, size_t lo, size_t hi) {
+    if (g_terminate)
+        return;
+
     if (lo + 1 < hi) {
         size_t mid = (lo + hi) / 2;
 
@@ -517,7 +523,7 @@ int largestPowerOfTwoLessThan(int n) {
 void HeapSort(Item* A, size_t n) {
     size_t i = n / 2;
 
-    while (1) {
+    while (!g_terminate) {
         if (i > 0) {
             // build heap, sift A[i] down the heap
             i--;
@@ -723,12 +729,18 @@ public:
         // set strip size
         array_size = strip_.size();
         array.resize(array_size);
+        intensity_last = strip.intensity();
 
         frame_drop_ = 0;
         delay_time_ = 0;
         set_delay_time(delay_time);
 
         enable_count_ = true;
+    }
+
+    ~SortAnimation() {
+        // free array
+        std::vector<Item>().swap(array);
     }
 
     void array_randomize() {
@@ -755,8 +767,9 @@ public:
         }
     }
 
-    unsigned intensity_high = 255;
-    unsigned intensity_low = 64;
+    // unsigned intensity_high = 255;
+    // unsigned intensity_low = 64;
+    unsigned intensity_last = 0;
 
     void OnAccess(const Item* a, bool with_delay) override {
         if (a < array.data() || a >= array.data() + array_size)
@@ -812,6 +825,13 @@ public:
         }
         if (DelayHook)
             DelayHook();
+
+        if (intensity_last != strip_.intensity()) {
+            intensity_last = strip_.intensity();
+            for (size_t i = 0; i < array_size; ++i) {
+                flash_low(i);
+            }
+        }
     }
 
     void yield_delay() {
@@ -831,16 +851,23 @@ public:
             strip_.setPixel(i, 0);
         else
             strip_.setPixel(
-                i, HSVColor(value_to_hue(array[i].value_), 255, intensity_low));
+                i, HSVColor(value_to_hue(array[i].value_), 255,
+                            strip_.intensity()));
     }
 
     void flash_high(size_t i) {
+        size_t intensity_high = strip_.intensity();
+        intensity_high *= 4;
+        if (intensity_high > 255)
+            intensity_high = 255;
+
         if (array[i].value_ == black) {
             strip_.setPixel(i, Color(intensity_high));
         }
         else {
-            Color c = HSVColor(value_to_hue(array[i].value_), 255, intensity_high);
-            c.white = 128;
+            Color c = HSVColor(
+                value_to_hue(array[i].value_), 255, intensity_high);
+            c.white = intensity_high / 2;
             strip_.setPixel(i, c);
         }
     }
@@ -935,93 +962,30 @@ protected:
     bool enable_count_;
 };
 
-const char * GetSortFunctionName(SortFunctionType sort_function) {
-    if (sort_function == SelectionSort)
-        return "Selection Sort";
-    if (sort_function == InsertionSort)
-        return "Insertion Sort";
-    if (sort_function == BubbleSort)
-        return "Bubble Sort";
-    if (sort_function == CocktailShakerSort)
-        return "Cocktail-Shaker Sort";
-    if (sort_function == SortFunctionType(QuickSortLR))
-        return "QuickSort (LR)\nHoare";
-    if (sort_function == SortFunctionType(QuickSortLL))
-        return "QuickSort (LL)\nLomoto";
-    if (sort_function == QuickSortDualPivot)
-        return "QuickSort\nDual Pivot";
-    if (sort_function == SortFunctionType(MergeSort))
-        return "MergeSort";
-    if (sort_function == ShellSort)
-        return "ShellSort";
-    if (sort_function == HeapSort)
-        return "HeapSort";
-    if (sort_function == SortFunctionType(CycleSort))
-        return "CycleSort";
-    if (sort_function == SortFunctionType(RadixSortMSD))
-        return "RadixSortMSD";
-    if (sort_function == RadixSortLSD)
-        return "RadixSortLSD";
-    if (sort_function == StdSort)
-        return "std::sort";
-    if (sort_function == StdStableSort)
-        return "std::stable_sort";
-    if (sort_function == WikiSort)
-        return "WikiSort";
-    if (sort_function == TimSort)
-        return "TimSort";
-    if (sort_function == BozoSort)
-        return "BozoSort";
-
-    return "<Unknown>";
-}
-
 template <typename LEDStrip>
-void RunSort(LEDStrip& strip, void (*sort_function)(Item* A, size_t n),
+void RunSort(LEDStrip& strip, const char* algo_name,
+             void (*sort_function)(Item* A, size_t n),
              int32_t delay_time = 10000) {
 
-    const char* algo_name = GetSortFunctionName(sort_function);
-    printf("%s delay time: %d\n", algo_name, delay_time);
-
-    uint32_t ts = millis();
+    // printf("%s delay time: %d\n", algo_name, delay_time);
+    // uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
         AlgorithmNameHook(algo_name);
     ani.array_randomize();
     sort_function(array.data(), array_size);
-    printf("%s running time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
+    // printf("%s running time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
 
-    ts = millis();
+    // ts = millis();
     ani.set_delay_time(-4);
     ani.set_enable_count(false);
     ani.array_check();
     ani.pflush();
-    printf("%s check time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
+    // printf("%s check time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
     ani.yield_delay(2000000);
 }
 
 /******************************************************************************/
-
-template <typename LEDStrip>
-void RunAllSortAnimation(LEDStrip& strip) {
-    RunSort(strip, SelectionSort);
-    RunSort(strip, InsertionSort);
-    RunSort(strip, BubbleSort);
-    RunSort(strip, CocktailShakerSort);
-    RunSort(strip, QuickSortLR);
-    RunSort(strip, QuickSortDualPivot);
-    RunSort(strip, MergeSort);
-    RunSort(strip, ShellSort);
-    RunSort(strip, HeapSort);
-    RunSort(strip, CycleSort);
-    RunSort(strip, RadixSortMSD);
-    RunSort(strip, RadixSortLSD);
-    RunSort(strip, StdSort);
-    RunSort(strip, StdStableSort);
-    RunSort(strip, WikiSort);
-    RunSort(strip, TimSort);
-    RunSort(strip, BozoSort);
-}
 
 } // namespace NeoSort
 

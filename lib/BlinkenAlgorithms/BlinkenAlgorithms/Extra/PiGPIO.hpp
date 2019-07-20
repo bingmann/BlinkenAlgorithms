@@ -10,6 +10,7 @@
 #define BLINKENALGORITHMS_EXTRA_PIGPIO_HEADER
 
 #include <fcntl.h>
+#include <stdio.h>
 #include <unistd.h>
 
 namespace BlinkenAlgorithms {

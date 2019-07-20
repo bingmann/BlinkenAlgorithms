@@ -1,15 +1,15 @@
 /*******************************************************************************
- * lib/BlinkenAlgorithms/BlinkenAlgorithms/Strip/OctoSK6812Adapter.hpp
+ * lib/BlinkenAlgorithms/BlinkenAlgorithms/Strip/OctoSK6812Buffer.hpp
  *
  * Copyright (C) 2018 Timo Bingmann <tb@panthema.net>
  *
  * All rights reserved. Published under the GNU General Public License v3.0
  ******************************************************************************/
 
-#ifndef BLINKENALGORITHMS_STRIP_OCTOSK6812ADAPTER_HEADER
-#define BLINKENALGORITHMS_STRIP_OCTOSK6812ADAPTER_HEADER
+#ifndef BLINKENALGORITHMS_STRIP_OCTOSK6812BUFFER_HEADER
+#define BLINKENALGORITHMS_STRIP_OCTOSK6812BUFFER_HEADER
 
-#include <BlinkenAlgorithms/Strip/LEDStripBase.hpp>
+#include <NeoAnimation/Strip/LEDStripBase.hpp>
 
 /******************************************************************************/
 
@@ -31,20 +31,34 @@
 
 #include <OctoSK6812.h>
 
-namespace BlinkenAlgorithms {
+namespace NeoAnimation {
 
 template <typename OctoSK6812>
-class OctoSK6812Adapter : public LEDStripBase
+class OctoSK6812Buffer : public LEDStripBase
 {
 public:
-    explicit OctoSK6812Adapter(OctoSK6812& strip, size_t active_parts = 8)
-        : LEDStripBase(), strip_(strip), active_parts_(active_parts) { }
+    explicit OctoSK6812Buffer(OctoSK6812& strip, size_t active_parts = 8,
+                              size_t active_size = 300)
+        : LEDStripBase(), strip_(strip),
+          strip_size_(strip.numPixels() / 8),
+          active_parts_(active_parts),
+          active_size_(active_size),
+          buffer_(new Color[active_size]) {
+        memset(buffer_, 0, sizeof(Color) * active_size_);
+    }
+
+    ~OctoSK6812Buffer() {
+        delete[] buffer_;
+    }
 
     size_t size() const {
-        return strip_.numPixels() * active_parts_ / 8;
+        return active_size_;
     }
 
     void show() const {
+        for (size_t i = 0; i < active_size_; ++i) {
+            strip_.setPixel(i, buffer_[i].v);
+        }
         return strip_.show();
     }
 
@@ -54,22 +68,32 @@ public:
 
     void setPixel(size_t i, const Color& c) {
         Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
-        strip_.setPixel(i, c.v);
+        if (i < active_size_) {
+            buffer_[i] = c2;
+        }
     }
 
     void orPixel(size_t i, const Color& c) {
         Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
-        strip_.setPixel(i, strip_.getPixel(i) | c.v);
+        if (i < active_size_) {
+            Color c1 = buffer_[i];
+            buffer_[i] = Color(
+                c1.r | c2.r, c1.g | c2.g, c1.b | c2.b, c1.w | c2.w);
+        }
     }
 
 private:
     OctoSK6812& strip_;
 
+    size_t strip_size_;
     size_t active_parts_;
+    size_t active_size_;
+
+    Color* buffer_;
 };
 
-} // namespace BlinkenAlgorithms
+} // namespace NeoAnimation
 
-#endif // !BLINKENALGORITHMS_STRIP_OCTOSK6812ADAPTER_HEADER
+#endif // !BLINKENALGORITHMS_STRIP_OCTOSK6812BUFFER_HEADER
 
 /******************************************************************************/

@@ -14,9 +14,9 @@
 #include <BlinkenAlgorithms/RunAnimation.hpp>
 #include <BlinkenAlgorithms/Strip/OctoSK6812Adapter.hpp>
 
-/******************************************************************************/
-
 using namespace BlinkenAlgorithms;
+
+/******************************************************************************/
 
 static const size_t strip_size = 300;
 
@@ -25,7 +25,8 @@ int drawMemory[strip_size * 8];
 
 OctoSK6812 strip(strip_size, displayMemory, drawMemory, SK6812_GRBW);
 
-OctoSK6812Adapter<OctoSK6812> my_strip(strip, /* active_parts */ 1);
+using MyStrip = OctoSK6812Adapter<OctoSK6812>;
+MyStrip my_strip(strip, /* active_parts */ 1);
 
 /******************************************************************************/
 
@@ -57,34 +58,74 @@ void loop() {
         size_t a = random(10);
         switch (a) {
         case 0:
-            RunAnimation<ColorWipeRGBW>(my_strip, time_limit);
+            RunAnimation(
+                ColorWipeRGBW<MyStrip>(my_strip),
+                time_limit);
             break;
         case 1:
-            RunAnimation<ColorWipeTwoSine>(my_strip, time_limit);
+            RunAnimation(
+                ColorWipeTwoSine<MyStrip>(my_strip),
+                time_limit);
             break;
         case 2:
-            RunAnimation<WheelColorTest>(my_strip, time_limit);
+            RunAnimation(
+                WheelColorTest<MyStrip>(my_strip),
+                time_limit);
             break;
         case 3:
-            RunAnimation<HSVColorTest>(my_strip, time_limit);
+            RunAnimation(
+                HSVColorTest<MyStrip>(my_strip),
+                time_limit);
             break;
         case 4:
-            RunAnimation<SparkleWhite>(my_strip, time_limit);
+            RunAnimation(
+                SparkleWhite<MyStrip>(my_strip),
+                time_limit);
             break;
         case 5:
-            RunAnimation<SparkleRGB>(my_strip, time_limit);
+            RunAnimation(
+                SparkleRGB<MyStrip>(my_strip),
+                time_limit);
             break;
         case 6:
-            RunAnimation<Fire>(my_strip, time_limit);
+            RunAnimation(
+                SparkleWhite<MyStrip>(my_strip, /* speed */ 2000, /* density */ 5),
+                time_limit);
             break;
         case 7:
-            RunAnimation<FireIce>(my_strip, time_limit);
+            RunAnimation(
+                SparkleRGB<MyStrip>(my_strip, /* speed */ 2000, /* density */ 5),
+                time_limit);
             break;
         case 8:
-            RunAnimation<SprayColor>(my_strip, time_limit);
+            RunAnimation(
+                Fire<MyStrip>(my_strip),
+                time_limit);
             break;
         case 9:
-            RunAnimation<Fireworks>(my_strip, time_limit);
+            RunAnimation(
+                FireIce<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 10:
+            RunAnimation(
+                SprayColor<MyStrip>(my_strip, /* reverse */ false),
+                time_limit);
+            break;
+        case 11:
+            RunAnimation(
+                SprayColor<MyStrip>(my_strip, /* reverse */ true),
+                time_limit);
+            break;
+        case 12:
+            RunAnimation(
+                Fireworks<MyStrip>(my_strip),
+                time_limit);
+            break;
+        case 13:
+            RunAnimation(
+                Starlight<MyStrip>(my_strip),
+                time_limit);
             break;
         }
     }

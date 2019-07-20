@@ -185,42 +185,23 @@ void CuckooHashingThree(Item* A, size_t n) {
 
 /******************************************************************************/
 
-const char * GetHashFunctionName(SortFunctionType sort_function) {
-    if (sort_function == LinearProbingHT)
-        return "Hashing\nLinear Probe";
-    if (sort_function == QuadraticProbingHT)
-        return "Hashing\nQuadratic Pr";
-    if (sort_function == CuckooHashingTwo)
-        return "Hashing\nCuckoo Two";
-    if (sort_function == CuckooHashingThree)
-        return "Hashing\nCuckoo Three";
-
-    return "<Unknown>";
-}
-
 template <typename LEDStrip>
-void RunHash(LEDStrip& strip, void (*hash_function)(Item* A, size_t n),
+void RunHash(LEDStrip& strip, const char* algo_name,
+             void (*hash_function)(Item* A, size_t n),
              int32_t delay_time = 10000) {
 
-    const char* algo_name = GetHashFunctionName(hash_function);
-    printf("%s delay time: %d\n", algo_name, delay_time);
+    // printf("%s delay time: %d\n", algo_name, delay_time);
+    // uint32_t ts = millis();
 
-    uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
         AlgorithmNameHook(algo_name);
     ani.array_black();
     hash_function(array.data(), array.size());
-    printf("%s running time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
+    // printf("%s running time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
 }
 
-template <typename LEDStrip>
-void RunAllHashAnimation(LEDStrip& strip) {
-    RunHash(strip, LinearProbingHT);
-    RunHash(strip, QuadraticProbingHT);
-    RunHash(strip, CuckooHashingTwo);
-    RunHash(strip, CuckooHashingThree);
-}
+/******************************************************************************/
 
 } // namespace NeoHashTable
 

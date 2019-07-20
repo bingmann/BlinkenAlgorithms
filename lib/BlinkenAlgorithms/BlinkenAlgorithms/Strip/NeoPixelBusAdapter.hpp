@@ -35,13 +35,15 @@ public:
     }
 
     void setPixel(size_t i, const Color& c) {
-        strip_.SetPixelColor(i, RgbwColor(c.r, c.g, c.b, c.w));
+        strip_.SetPixelColor(
+            i, RgbwColor(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w)));
     }
 
     void orPixel(size_t i, const Color& c) {
         RgbwColor b = strip_.GetPixelColor(i);
         strip_.SetPixelColor(
-            i, RgbwColor(c.r | b.R, c.g | b.G, c.b | b.B, c.w | b.W));
+            i, RgbwColor(gamma8(c.r) | b.R, gamma8(c.g) | b.G,
+                         gamma8(c.b) | b.B, gamma8(c.w) | b.W));
     }
 
 private:

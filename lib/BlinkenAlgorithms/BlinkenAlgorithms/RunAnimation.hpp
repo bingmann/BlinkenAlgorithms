@@ -23,24 +23,21 @@ static const uint32_t NoUpdate = uint32_t(-2);
 
 /******************************************************************************/
 
-template <template <class> class Animation,
-          typename LEDStrip>
-void RunAnimation(LEDStrip& strip1,
-                  size_t time_limit) {
-    Animation<LEDStrip> ani1(strip1);
+template <typename Animation1>
+void RunAnimation(Animation1&& ani1, size_t time_limit) {
     uint32_t ts_end = micros() + 1000 * time_limit;
     g_terminate = false;
 
     for (uint32_t s = 0; micros() < ts_end; ++s) {
-        uint32_t d = ani1(strip1, s);
+        uint32_t d = ani1(s);
 
         if (d == EndAnimation)
             break;
         else if (d == NoUpdate)
             d = 0;
         else {
-            if (!strip1.busy()) {
-                strip1.show();
+            if (!ani1.strip_.busy()) {
+                ani1.strip_.show();
             }
         }
 
@@ -53,14 +50,8 @@ void RunAnimation(LEDStrip& strip1,
     }
 }
 
-template <template <class> class Animation1,
-          template <class> class Animation2,
-          typename LEDStrip1,
-          typename LEDStrip2>
-void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
-                  size_t time_limit) {
-    Animation1<LEDStrip1> ani1(strip1);
-    Animation2<LEDStrip2> ani2(strip2);
+template <typename Animation1, typename Animation2>
+void RunAnimation(Animation1&& ani1, Animation2&& ani2, size_t time_limit) {
     uint32_t ts_end = micros() + 1000 * time_limit;
     uint32_t s1 = 0, s2 = 0;
     uint32_t d1 = 0, d2 = 0;
@@ -74,7 +65,7 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
             break;
 
         if (d1 < ts) {
-            uint32_t d = ani1(strip1, s1++);
+            uint32_t d = ani1(s1++);
             if (d == EndAnimation) {
                 d1 = EndAnimation;
             }
@@ -85,7 +76,7 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
             }
         }
         if (d2 < ts) {
-            uint32_t d = ani2(strip2, s2++);
+            uint32_t d = ani2(s2++);
             if (d == EndAnimation) {
                 d2 = EndAnimation;
             }
@@ -96,12 +87,12 @@ void RunAnimation(LEDStrip1& strip1, LEDStrip2& strip2,
             }
         }
 
-        if (dirty1 && !strip1.busy()) {
-            strip1.show();
+        if (dirty1 && !ani1.strip_.busy()) {
+            ani1.strip_.show();
             dirty1 = false;
         }
-        if (dirty2 && !strip2.busy()) {
-            strip2.show();
+        if (dirty2 && !ani2.strip_.busy()) {
+            ani2.strip_.show();
             dirty2 = false;
         }
 

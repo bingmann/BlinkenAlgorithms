@@ -248,19 +248,19 @@ int main() {
                 break;
 
             case Mode::InsertionSort:
-                RunSort(my_strip, InsertionSort, -21);
+                RunSort(my_strip, "Insertion Sort", InsertionSort, -21);
                 wait_forever();
                 break;
             case Mode::QuickSortFast:
-                RunSort(my_strip, QuickSortLR, -21);
+                RunSort(my_strip, "QuickSort LR", QuickSortLR, -21);
                 wait_forever();
                 break;
             case Mode::QuickSortSlow:
-                RunSort(my_strip, QuickSortLR, 10);
+                RunSort(my_strip, "QuickSort LR", QuickSortLR, 10);
                 wait_forever();
                 break;
             case Mode::MergeSort:
-                RunSort(my_strip, MergeSort, 10);
+                RunSort(my_strip, "Merge Sort", MergeSort, 10);
                 wait_forever();
                 break;
             }
