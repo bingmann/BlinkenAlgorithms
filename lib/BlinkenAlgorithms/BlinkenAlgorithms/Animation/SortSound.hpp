@@ -177,6 +177,7 @@ static std::mutex s_mutex_access_list;
 //! "public" function to add a new array access
 static void OnSoundAccess(size_t i) {
     if (!g_sound_on) return;
+    if (i == NeoSort::black) return;
 
 #if !TEENSYDUINO
     std::unique_lock<std::mutex> lock(s_mutex_access_list);
