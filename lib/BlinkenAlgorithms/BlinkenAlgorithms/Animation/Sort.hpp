@@ -19,7 +19,7 @@
 #include "TimSort.hpp"
 #include "WikiSort.hpp"
 
-namespace NeoSort {
+namespace BlinkenSort {
 
 using namespace BlinkenAlgorithms;
 
@@ -981,27 +981,30 @@ void RunSort(LEDStrip& strip, const char* algo_name,
              void (*sort_function)(Item* A, size_t n),
              int32_t delay_time = 10000) {
 
-    // printf("%s delay time: %d\n", algo_name, delay_time);
-    // uint32_t ts = millis();
+    uint32_t ts = millis();
+
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
         AlgorithmNameHook(algo_name);
     ani.array_randomize();
     sort_function(array.data(), array_size);
-    // printf("%s running time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
 
-    // ts = millis();
+    printf("%s running time: %.2f fix delay_time %.2f\n",
+           algo_name, (millis() - ts) / 1000.0,
+           10.0 / ((millis() - ts) / 1000.0) * delay_time);
+
+    ts = millis();
     ani.set_delay_time(-4);
     ani.set_enable_count(false);
     ani.array_check();
     ani.pflush();
-    // printf("%s check time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
+    //printf("%s check time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
     ani.yield_delay(2000000);
 }
 
 /******************************************************************************/
 
-} // namespace NeoSort
+} // namespace BlinkenSort
 
 #endif // !BLINKENALGORITHMS_ANIMATION_SORT_HEADER
 

@@ -9,7 +9,7 @@
 #ifndef BLINKENALGORITHMS_STRIP_OCTOSK6812BUFFER_HEADER
 #define BLINKENALGORITHMS_STRIP_OCTOSK6812BUFFER_HEADER
 
-#include <NeoAnimation/Strip/LEDStripBase.hpp>
+#include <BlinkenAlgorithms/Strip/LEDStripBase.hpp>
 
 /******************************************************************************/
 
@@ -31,7 +31,7 @@
 
 #include <OctoSK6812.h>
 
-namespace NeoAnimation {
+namespace BlinkenAlgorithms {
 
 template <typename OctoSK6812>
 class OctoSK6812Buffer : public LEDStripBase
@@ -92,7 +92,7 @@ private:
     Color* buffer_;
 };
 
-} // namespace NeoAnimation
+} // namespace BlinkenAlgorithms
 
 #endif // !BLINKENALGORITHMS_STRIP_OCTOSK6812BUFFER_HEADER
 

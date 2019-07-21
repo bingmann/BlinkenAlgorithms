@@ -23,6 +23,10 @@
 
 /******************************************************************************/
 
+#define printf Serial.printf
+
+/******************************************************************************/
+
 // fix problem with Teensy's compile chain and <random>
 #if TEENSYDUINO
 namespace std {

@@ -330,7 +330,7 @@ public:
     std::default_random_engine rng2{ seed_ };
     std::default_random_engine rng3{ seed_ };
 
-    uint32_t operator () (uint32_t s) {
+    uint32_t operator () (uint32_t) {
         size_t strip_size = strip_.size();
         unsigned intensity = strip_.intensity();
 

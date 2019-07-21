@@ -9,11 +9,11 @@
 #ifndef BLINKENALGORITHMS_STRIP_ADAFRUITNEOPIXELADAPTER_HEADER
 #define BLINKENALGORITHMS_STRIP_ADAFRUITNEOPIXELADAPTER_HEADER
 
-#include <NeoAnimation/Strip/LEDStripBase.hpp>
+#include <BlinkenAlgorithms/Strip/LEDStripBase.hpp>
 
 #include <Adafruit_NeoPixel.h>
 
-namespace NeoAnimation {
+namespace BlinkenAlgorithms {
 
 class AdafruitNeoPixelAdapter : public LEDStripBase
 {
@@ -52,7 +52,7 @@ private:
     Adafruit_NeoPixel& strip_;
 };
 
-} // namespace NeoAnimation
+} // namespace BlinkenAlgorithms
 
 #endif // !BLINKENALGORITHMS_STRIP_ADAFRUITNEOPIXELADAPTER_HEADER
 

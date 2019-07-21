@@ -22,9 +22,9 @@
 #include <stdio.h>
 #include <vector>
 
-namespace NeoLawaSAT {
+namespace BlinkenLawaSAT {
 
-using namespace NeoSort;
+using namespace BlinkenSort;
 
 class Lawa
 {
@@ -326,7 +326,7 @@ void RunLawaSAT(LEDStrip& strip) {
     Lawa().Run();
 }
 
-} // namespace NeoLawaSAT
+} // namespace BlinkenLawaSAT
 
 #endif // !BLINKENALGORITHMS_ANIMATION_LAWASAT_HEADER
 

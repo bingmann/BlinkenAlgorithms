@@ -16,9 +16,9 @@
 #include <random>
 #include <vector>
 
-namespace NeoHashTable {
+namespace BlinkenHashtable {
 
-using namespace NeoSort;
+using namespace BlinkenSort;
 
 /******************************************************************************/
 // Hashing with Linear Probing
@@ -191,19 +191,24 @@ void RunHash(LEDStrip& strip, const char* algo_name,
              int32_t delay_time = 10000) {
 
     // printf("%s delay time: %d\n", algo_name, delay_time);
-    // uint32_t ts = millis();
 
+    uint32_t ts = millis();
     SortAnimation<LEDStrip> ani(strip, delay_time);
     if (AlgorithmNameHook)
         AlgorithmNameHook(algo_name);
     ani.array_black();
     hash_function(array.data(), array.size());
+
+    printf("%s running time: %.2f fix delay_time %.2f\n",
+           algo_name, (millis() - ts) / 1000.0,
+           10.0 / ((millis() - ts) / 1000.0) * delay_time);
+
     // printf("%s running time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
 }
 
 /******************************************************************************/
 
-} // namespace NeoHashTable
+} // namespace BlinkenHashtable
 
 #endif // !BLINKENALGORITHMS_ANIMATION_HASHTABLE_HEADER
 

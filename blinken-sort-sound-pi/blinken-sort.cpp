@@ -222,12 +222,12 @@ int main() {
     array_max = my_strip.size();
 
     // enable hooks
-    NeoSort::SoundAccessHook = OnSoundAccess;
-    NeoSort::DelayHook = OnDelay;
-    NeoSort::ComparisonCountHook = OnComparisonCount;
-    NeoSort::AlgorithmNameHook = OnAlgorithmName;
+    BlinkenSort::SoundAccessHook = OnSoundAccess;
+    BlinkenSort::DelayHook = OnDelay;
+    BlinkenSort::ComparisonCountHook = OnComparisonCount;
+    BlinkenSort::AlgorithmNameHook = OnAlgorithmName;
 
-    using namespace NeoSort;
+    using namespace BlinkenSort;
 
     while (1) {
         try {
