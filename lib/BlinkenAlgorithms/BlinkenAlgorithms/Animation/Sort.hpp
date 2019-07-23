@@ -153,6 +153,8 @@ public:
 
     static void OnAccess(const Item* a, bool with_delay = true);
     static void OnComparison(const Item&, const Item&);
+
+    static void IncrementCounter();
 };
 
 using SortFunctionType = void (*)(Item * A, size_t n);
@@ -162,6 +164,7 @@ class SortAnimationBase
 public:
     virtual void OnAccess(const Item* a, bool with_delay) = 0;
     virtual void OnComparison(const Item* a, const Item* b) = 0;
+    virtual void IncrementCounter() = 0;
 };
 
 static SortAnimationBase* sort_animation_hook = nullptr;
@@ -171,6 +174,7 @@ static void (* SoundAccessHook)(size_t i) = nullptr;
 static void (* DelayHook)() = nullptr;
 static void (* AlgorithmNameHook)(const char* name) = nullptr;
 static void (* ComparisonCountHook)(size_t count) = nullptr;
+static unsigned intensity_flash_high = 2;
 
 void Item::OnAccess(const Item* a, bool with_delay) {
     if (sort_animation_hook)
@@ -186,6 +190,12 @@ void Item::OnComparison(const Item& a, const Item& b) {
     if (SoundAccessHook) {
         SoundAccessHook(a.value_);
         SoundAccessHook(b.value_);
+    }
+}
+
+void Item::IncrementCounter() {
+    if (sort_animation_hook) {
+        sort_animation_hook->IncrementCounter();
     }
 }
 
@@ -586,8 +596,10 @@ void CycleSort(Item* A, size_t n) {
             // Find where to put the item.
             rank = cycleStart;
             for (size_t i = cycleStart + 1; i < n; ++i) {
-                if (A[i] < item)
+                // special: compare and count but don't flash
+                if (A[i].less_direct(item))
                     rank++;
+                A[i].IncrementCounter();
             }
 
             // If the item is already there, this is a 1-cycle.
@@ -781,8 +793,6 @@ public:
         }
     }
 
-    // unsigned intensity_high = 255;
-    // unsigned intensity_low = 64;
     unsigned intensity_last = 0;
 
     void OnAccess(const Item* a, bool with_delay) override {
@@ -791,14 +801,18 @@ public:
         flash(a - array.data(), with_delay);
     }
 
-    size_t num_comparisons = 0;
+    size_t counter_value = 0;
+
+    void IncrementCounter() {
+        if (enable_count_)
+            ++counter_value;
+        if (ComparisonCountHook) {
+            ComparisonCountHook(counter_value);
+        }
+    }
 
     void OnComparison(const Item* a, const Item* b) override {
-        if (enable_count_)
-            ++num_comparisons;
-        if (ComparisonCountHook) {
-            ComparisonCountHook(num_comparisons);
-        }
+        IncrementCounter();
         if (a >= array.data() && a < array.data() + array_size &&
             b >= array.data() && b < array.data() + array_size)
             flash(a - array.data(), b - array.data(), /* with_delay */ true);
@@ -871,7 +885,7 @@ public:
 
     void flash_high(size_t i) {
         size_t intensity_high = strip_.intensity();
-        intensity_high *= 4;
+        intensity_high = (intensity_high * intensity_flash_high) / 100;
         if (intensity_high > 255)
             intensity_high = 255;
 
@@ -886,7 +900,7 @@ public:
         }
     }
 
-    size_t frame_buffer_[128] = { 0 };
+    size_t frame_buffer_[256] = { 0 };
     size_t frame_buffer_pos_ = 0;
     size_t frame_drop_ = 0;
 
@@ -998,7 +1012,7 @@ void RunSort(LEDStrip& strip, const char* algo_name,
     ani.set_enable_count(false);
     ani.array_check();
     ani.pflush();
-    //printf("%s check time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
+    // printf("%s check time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
     ani.yield_delay(2000000);
 }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * lib/BlinkenAlgorithms/BlinkenAlgorithms/Animation/HashTable.hpp
+ * lib/BlinkenAlgorithms/BlinkenAlgorithms/Animation/Hashtable.hpp
  *
  * Copyright (C) 2018 Timo Bingmann <tb@panthema.net>
  *
@@ -37,7 +37,7 @@ void LinearProbingHT(Item* A, size_t n) {
 
     size_t cshift = random(n);
 
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n * 95 / 100; ++i) {
         // pick a new item to insert
         Item v = Item((i + cshift) % n);
 
@@ -46,6 +46,8 @@ void LinearProbingHT(Item* A, size_t n) {
             idx = (idx + 1) % n;
         }
         A[idx] = v;
+
+        A[idx].IncrementCounter();
     }
 }
 
@@ -56,7 +58,7 @@ void QuadraticProbingHT(Item* A, size_t n) {
 
     size_t cshift = random(n);
 
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n * 95 / 100; ++i) {
         // pick a new item to insert
         Item v = Item((i + cshift) % n);
 
@@ -71,6 +73,8 @@ void QuadraticProbingHT(Item* A, size_t n) {
             }
         }
         A[idx] = v;
+
+        A[idx].IncrementCounter();
     }
 }
 
@@ -96,12 +100,14 @@ void CuckooHashingTwo(Item* A, size_t n) {
         uint32_t pos = hash2(0, v.value()) % n;
         if (A[pos].value() == black) {
             A[pos] = v;
+            A[pos].IncrementCounter();
             continue;
         }
 
         pos = hash2(1, v.value()) % n;
         if (A[pos].value() == black) {
             A[pos] = v;
+            A[pos].IncrementCounter();
             continue;
         }
 
@@ -119,6 +125,8 @@ void CuckooHashingTwo(Item* A, size_t n) {
             if (++r >= n)
                 return;
         }
+
+        A[pos].IncrementCounter();
     }
 }
 
@@ -146,18 +154,21 @@ void CuckooHashingThree(Item* A, size_t n) {
         uint32_t pos = hash3(0, v.value(), n);
         if (A[pos].value() == black) {
             A[pos] = v;
+            A[pos].IncrementCounter();
             continue;
         }
 
         pos = hash3(1, v.value(), n);
         if (A[pos].value() == black) {
             A[pos] = v;
+            A[pos].IncrementCounter();
             continue;
         }
 
         pos = hash3(2, v.value(), n);
         if (A[pos].value() == black) {
             A[pos] = v;
+            A[pos].IncrementCounter();
             continue;
         }
 
@@ -180,6 +191,8 @@ void CuckooHashingThree(Item* A, size_t n) {
             if (++r >= n)
                 return;
         }
+
+        A[pos].IncrementCounter();
     }
 }
 

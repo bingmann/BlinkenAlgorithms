@@ -19,7 +19,9 @@ size_t g_delay_factor = 1000;
 int main() {
     srandom(time(nullptr));
 
-    RunRandomAlgorithmAnimation(my_strip);
+    while (1) {
+        RunRandomAlgorithmAnimation(my_strip);
+    }
 
     return 0;
 }

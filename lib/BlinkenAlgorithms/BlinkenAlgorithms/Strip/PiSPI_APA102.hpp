@@ -49,16 +49,14 @@ public:
                       << strerror(errno) << std::endl;
         }
 
-        spiSpeed_ = 9600000;
+        spiSpeed_ = 16000000;
         if (ioctl(fd_, SPI_IOC_WR_MAX_SPEED_HZ, &spiSpeed_) < 0) {
             std::cerr << "SPI Speed Change failure: "
                       << strerror(errno) << std::endl;
         }
 
-        if (cs_pin >= 0) {
-            cs_gpio_.set_pin(cs_pin, /* output */ true);
-            cs_gpio_.write(0);
-        }
+        cs_gpio_.set_pin(cs_pin, /* output */ true);
+        cs_gpio_.write(0);
     }
 
     struct APAColor {

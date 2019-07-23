@@ -33,7 +33,11 @@ public:
 
     //! initialize
     bool set_pin(int pin, bool output) {
-        if (export_pin(pin) && set_direction(pin, output)) {
+        if (pin < 0) {
+            pin_ = pin;
+            return true;
+        }
+        else if (export_pin(pin) && set_direction(pin, output)) {
             pin_ = pin;
             return true;
         }

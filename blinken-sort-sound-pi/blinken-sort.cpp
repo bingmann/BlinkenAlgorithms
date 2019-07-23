@@ -12,22 +12,123 @@
 #include <linux/input.h>
 #include <SDL.h>
 
-#include <BlinkenAlgorithms/Animation/RandomAlgorithm.hpp>
+#include <BlinkenAlgorithms/Animation/Hashtable.hpp>
+#include <BlinkenAlgorithms/Animation/LawaSAT.hpp>
+#include <BlinkenAlgorithms/Animation/Sort.hpp>
+
 #include <BlinkenAlgorithms/Strip/PiSPI_APA102.hpp>
 
 #include <BlinkenAlgorithms/Extra/Font5x5.hpp>
 #include <BlinkenAlgorithms/Extra/MAX7219.hpp>
 
+#include <BlinkenAlgorithms/Animation/SortSound.hpp>
+
 /******************************************************************************/
 
-#include <BlinkenAlgorithms/Animation/SortSound.hpp>
+/*!
+ * BlinkenAlgorithms with delay time adapted for ESP8266 and Teensy 3.6 such
+ * that most algorithms run approximately 15 seconds each for a strip with 300
+ * LEDs.  Asymptotically slower algorithms run 20 seconds, faster ones 10 or
+ * less.
+ */
+template <typename LEDStrip>
+void RunRandomAlgorithm(LEDStrip& strip) {
+    for (size_t i = 0; i < strip.size(); ++i)
+        strip.setPixel(i, 0);
+
+    using namespace BlinkenSort;
+    using namespace BlinkenHashtable;
+    using namespace BlinkenLawaSAT;
+
+    size_t a = random(22);
+    switch (a) {
+    case 0:
+        RunSort(strip, "Selection Sort", SelectionSort, -44); // 60 secs
+        break;
+    case 1:
+        RunSort(strip, "Insertion Sort", InsertionSort, -40); // 50 secs
+        break;
+    case 2:
+        RunSort(strip, "Bubble Sort", BubbleSort, -60); // 63 secs
+        break;
+    case 3:
+        RunSort(strip, "Cocktail-Shaker Sort", CocktailShakerSort, -50); // 58 secs
+        break;
+    case 4:
+        RunSort(strip, "QuickSort (LR)\nHoare", QuickSortLR, -6); // 27 secs
+        break;
+    case 5:
+        RunSort(strip, "QuickSort (LL)\nLomoto", QuickSortLL, -6); // 27 secs
+        break;
+    case 6:
+        RunSort(strip, "QuickSort\nDual Pivot", QuickSortDualPivot, -4); // 24 secs
+        break;
+    case 7:
+        RunSort(strip, "MergeSort", MergeSort, -2); // 24 secs
+        break;
+    case 8:
+        RunSort(strip, "ShellSort", ShellSort, -3); // 42 secs
+        break;
+    case 9:
+        RunSort(strip, "HeapSort", HeapSort, -6); // 42 secs
+        break;
+    case 10:
+        RunSort(strip, "CycleSort", CycleSort, 16000); // 40 secs
+        break;
+    case 11:
+        RunSort(strip, "RadixSort-MSD\n(High First)", RadixSortMSD, -4); // 27 secs
+        break;
+    case 12:
+        RunSort(strip, "RadixSort-LSD\n(Low First)", RadixSortLSD, -1); // 27 secs
+        break;
+    case 13:
+        RunSort(strip, "std::sort", StdSort, -6); // 22 secs
+        break;
+    case 14:
+        RunSort(strip, "std::stable_sort", StdStableSort, -3); // 28 secs
+        break;
+    case 15:
+        RunSort(strip, "WikiSort", WikiSort, -6); // 42 secs
+        break;
+    case 16:
+        RunSort(strip, "TimSort", TimSort, -4); // 27 secs
+        break;
+    case 17:
+        RunSort(strip, "BozoSort", BozoSort, -4); // 20 secs (break time)
+        break;
+
+    /*------------------------------------------------------------------------*/
+
+    case 18:
+        RunHash(strip, "Linear Probe\nHash Table", // 40.8 secs
+                LinearProbingHT, 0);
+        break;
+    case 19:
+        RunHash(strip, "Quadratic Probe Hash Table", // 35 secs
+                QuadraticProbingHT, 4000);
+        break;
+    case 20:
+        RunHash(strip, "Cuckoo Two\nHash Table", // 35 secs
+                CuckooHashingTwo, 12000);
+        break;
+    case 21:
+        RunHash(strip, "Cuckoo Three\nHash Table",  // 35 secs
+                CuckooHashingThree, 6000);
+        break;
+
+    /*------------------------------------------------------------------------*/
+
+        // case 22:
+        //     RunLawaSAT(strip);
+        //     break;
+    }
+}
 
 /******************************************************************************/
 
 using namespace BlinkenAlgorithms;
 
-PiSPI_APA102 my_strip(
-    "/dev/spidev0.0", /* strip_size */ 5 * 96, /* cs_pin */ 24);
+PiSPI_APA102 my_strip("/dev/spidev0.0", /* strip_size */ 5 * 96);
 
 bool g_terminate = false;
 size_t g_delay_factor = 1000;
@@ -221,6 +322,10 @@ int main() {
 
     array_max = my_strip.size();
 
+    // set intensity
+    my_strip.set_intensity(128);
+    BlinkenSort::intensity_flash_high = 140;
+
     // enable hooks
     BlinkenSort::SoundAccessHook = OnSoundAccess;
     BlinkenSort::DelayHook = OnDelay;
@@ -235,8 +340,7 @@ int main() {
 
             switch (g_mode) {
             case Mode::Random:
-                RunRandomAlgorithmAnimation(my_strip);
-                wait_millis(3000);
+                RunRandomAlgorithm(my_strip);
                 break;
 
             case Mode::Blank:
