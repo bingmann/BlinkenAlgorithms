@@ -364,39 +364,39 @@ void QuickSortLR(Item* A, size_t n) {
 // Quick Sort LL (Lomuto partition scheme, two pointers at left, pivot is moved
 // to the right) (code by Timo Bingmann, based on CLRS' 3rd edition)
 
-size_t PartitionLL(Item* A, size_t lo, size_t hi) {
+ssize_t PartitionLL(Item* A, ssize_t lo, ssize_t hi) {
     // pick pivot and move to back
-    size_t p = QuickSortSelectPivot(A, lo, hi);
+    size_t p = QuickSortSelectPivot(A, lo, hi + 1);
+    swap(A[p], A[hi]);
 
-    Item& pivot = A[p];
-    swap(A[p], A[hi - 1]);
+    Item& pivot = A[hi];
 
     ssize_t i = lo;
 
-    for (size_t j = lo; j < hi - 1; ++j) {
-        if (A[j] <= pivot) {
+    for (ssize_t j = lo; j < hi; ++j) {
+        if (A[j] < pivot) {
             swap(A[i], A[j]);
             ++i;
         }
     }
 
-    swap(A[i], A[hi - 1]);
+    swap(A[i], A[hi]);
 
     return i;
 }
 
-void QuickSortLL(Item* A, size_t lo, size_t hi) {
-    if (lo + 1 < hi) {
-        size_t mid = PartitionLL(A, lo, hi);
+void QuickSortLL(Item* A, ssize_t lo, ssize_t hi) {
+    if (lo < hi) {
+        ssize_t mid = PartitionLL(A, lo, hi);
 
-        QuickSortLL(A, lo, mid);
+        QuickSortLL(A, lo, mid - 1);
         QuickSortLL(A, mid + 1, hi);
     }
 }
 
 void QuickSortLL(Item* A, size_t n) {
     g_quicksort_pivot = (QuickSortPivotType)random(PIVOT_SIZE);
-    QuickSortLL(A, 0, n);
+    QuickSortLL(A, 0, n - 1);
 }
 
 /******************************************************************************/
@@ -786,9 +786,14 @@ public:
     }
 
     void array_check() {
-        for (size_t i = 1; i < array_size; ++i) {
-            if (array[i - 1] >= array[i]) {
-                array[i - 1] = Item(black);
+        // for (size_t i = 1; i < array_size; ++i) {
+        //     if (array[i - 1] > array[i]) {
+        //         array[i - 1] = Item(black);
+        //     }
+        // }
+        for (size_t i = 0; i < array_size; ++i) {
+            if (array[i] != Item(i)) {
+                array[i] = Item(black);
             }
         }
     }
@@ -806,9 +811,8 @@ public:
     void IncrementCounter() {
         if (enable_count_)
             ++counter_value;
-        if (ComparisonCountHook) {
+        if (ComparisonCountHook)
             ComparisonCountHook(counter_value);
-        }
     }
 
     void OnComparison(const Item* a, const Item* b) override {
