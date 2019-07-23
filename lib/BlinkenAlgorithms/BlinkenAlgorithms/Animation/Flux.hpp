@@ -278,28 +278,28 @@ public:
 
     LEDStrip& strip_;
 
-    size_t pix = 4;
+    size_t pix_ = 4;
 
     uint32_t seed_;
 
     size_t speed_;
     size_t density_;
 
-    std::default_random_engine rng1{ seed_ };
-    std::default_random_engine rng2{ seed_ };
+    std::default_random_engine rng1_{ seed_ };
+    std::default_random_engine rng2_{ seed_ };
 
     uint32_t operator () (uint32_t s) {
         size_t strip_size = strip_.size();
         Color w = Color(strip_.intensity());
 
         if (s % 2 == 0) {
-            strip_.setPixel(rng1() % strip_size, w);
+            strip_.setPixel(rng1_() % strip_size, w);
         }
         else {
-            if (pix >= strip_size / density_)
-                strip_.setPixel(rng2() % strip_size, 0);
+            if (pix_ >= strip_size / density_)
+                strip_.setPixel(rng2_() % strip_size, 0);
             else
-                ++pix;
+                ++pix_;
         }
 
         return speed_;
@@ -318,7 +318,7 @@ public:
 
     LEDStrip& strip_;
 
-    size_t pix = 4;
+    size_t pix_ = 4;
 
     uint32_t seed_;
 
@@ -326,9 +326,9 @@ public:
     size_t density_;
     size_t multi_;
 
-    std::default_random_engine rng1{ seed_ };
-    std::default_random_engine rng2{ seed_ };
-    std::default_random_engine rng3{ seed_ };
+    std::default_random_engine rng1_{ seed_ };
+    std::default_random_engine rng2_{ seed_ };
+    std::default_random_engine rng3_{ seed_ };
 
     uint32_t operator () (uint32_t) {
         size_t strip_size = strip_.size();
@@ -336,12 +336,12 @@ public:
 
         for (size_t r = 0; r < multi_; ++r) {
             strip_.setPixel(
-                rng1() % strip_size, WheelColor(rng3(), intensity));
+                rng1_() % strip_size, WheelColor(rng3_(), intensity));
 
-            if (pix >= strip_size / density_)
-                strip_.setPixel(rng2() % strip_size, Color(0));
+            if (pix_ >= strip_size / density_)
+                strip_.setPixel(rng2_() % strip_size, Color(0));
             else
-                ++pix;
+                ++pix_;
         }
 
         return speed_;
@@ -437,40 +437,40 @@ class Fire
 public:
     Fire(LEDStrip& strip, size_t cooling = 20, size_t sparking = 160)
         : strip_(strip), cooling_(cooling), sparking_(sparking) {
-        strip_size = strip.size();
-        heat.resize(strip_size);
+        strip_size_ = strip.size();
+        heat_.resize(strip_size_);
     }
 
     LEDStrip& strip_;
 
     uint32_t operator () (uint32_t /* s */) {
         // Step 1. Cool down every cell a little
-        for (size_t i = 0; i < strip_size; i++) {
-            size_t cooldown = random(0, ((cooling_ * 10) / strip_size) + 2);
+        for (size_t i = 0; i < strip_size_; i++) {
+            size_t cooldown = random(0, ((cooling_ * 10) / strip_size_) + 2);
 
-            if (cooldown > heat[i]) {
-                heat[i] = 0;
+            if (cooldown > heat_[i]) {
+                heat_[i] = 0;
             }
             else {
-                heat[i] = heat[i] - cooldown;
+                heat_[i] = heat_[i] - cooldown;
             }
         }
 
         // Step 2. Heat from each cell drifts 'up' and diffuses a little
-        for (size_t k = strip_size - 1; k >= 2; k--) {
-            heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
+        for (size_t k = strip_size_ - 1; k >= 2; k--) {
+            heat_[k] = (heat_[k - 1] + heat_[k - 2] + heat_[k - 2]) / 3;
         }
 
         // Step 3. Randomly ignite new 'sparks' near the bottom
         if (random(255) < sparking_) {
             size_t y = random(7);
-            heat[y] = heat[y] + random(160, 255);
+            heat_[y] = heat_[y] + random(160, 255);
             // heat[y] = random(160,255);
         }
 
         // Step 4. Convert heat to LED colors
-        for (size_t j = 0; j < strip_size; j++) {
-            setPixelFireColor(strip_, j, heat[j]);
+        for (size_t j = 0; j < strip_size_; j++) {
+            setPixelFireColor(strip_, j, heat_[j]);
             // setPixelFireIceColor(strip_, j, 0, heat[j]);
         }
 
@@ -481,8 +481,8 @@ private:
     size_t cooling_;
     size_t sparking_;
 
-    std::vector<uint8_t> heat;
-    size_t strip_size;
+    std::vector<uint8_t> heat_;
+    size_t strip_size_;
 };
 
 template <typename LEDStrip>
@@ -491,58 +491,58 @@ class FireIce
 public:
     FireIce(LEDStrip& strip, size_t cooling = 20, size_t sparking = 160)
         : strip_(strip), cooling_(cooling), sparking_(sparking) {
-        strip_size = strip_.size();
-        heat.resize(strip_size);
-        ice.resize(strip_size);
+        strip_size_ = strip_.size();
+        heat_.resize(strip_size_);
+        cold_.resize(strip_size_);
     }
 
     uint32_t operator () (uint32_t /* s */) {
         // Step 1. Cool down every cell a little
-        for (size_t i = 0; i < strip_size; i++) {
-            size_t cooldown = random(0, ((cooling_ * 10) / strip_size) + 2);
+        for (size_t i = 0; i < strip_size_; i++) {
+            size_t cooldown = random(0, ((cooling_ * 10) / strip_size_) + 2);
 
-            if (cooldown > heat[i]) {
-                heat[i] = 0;
+            if (cooldown > heat_[i]) {
+                heat_[i] = 0;
             }
             else {
-                heat[i] = heat[i] - cooldown;
+                heat_[i] = heat_[i] - cooldown;
             }
         }
-        for (size_t i = 0; i < strip_size; i++) {
-            size_t cooldown = random(0, ((cooling_ * 10) / strip_size) + 2);
+        for (size_t i = 0; i < strip_size_; i++) {
+            size_t cooldown = random(0, ((cooling_ * 10) / strip_size_) + 2);
 
-            if (cooldown > ice[i]) {
-                ice[i] = 0;
+            if (cooldown > cold_[i]) {
+                cold_[i] = 0;
             }
             else {
-                ice[i] = ice[i] - cooldown;
+                cold_[i] = cold_[i] - cooldown;
             }
         }
 
         // Step 2. Heat from each cell drifts 'up' and diffuses a little
-        for (size_t k = strip_size - 1; k >= 2; k--) {
-            heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
+        for (size_t k = strip_size_ - 1; k >= 2; k--) {
+            heat_[k] = (heat_[k - 1] + heat_[k - 2] + heat_[k - 2]) / 3;
         }
-        for (size_t k = strip_size - 1; k >= 2; k--) {
-            ice[k] = (ice[k - 1] + ice[k - 2] + ice[k - 2]) / 3;
+        for (size_t k = strip_size_ - 1; k >= 2; k--) {
+            cold_[k] = (cold_[k - 1] + cold_[k - 2] + cold_[k - 2]) / 3;
         }
 
         // Step 3. Randomly ignite new 'sparks' near the bottom
         if (random(255) < sparking_) {
             size_t y = random(7);
-            heat[y] = heat[y] + random(160, 255);
+            heat_[y] = heat_[y] + random(160, 255);
             // heat[y] = random(160,255);
         }
         if (random(255) < sparking_) {
             size_t y = random(7);
-            ice[y] = ice[y] + random(160, 255);
+            cold_[y] = cold_[y] + random(160, 255);
             // ice[y] = random(160,255);
         }
 
         // Step 4. Convert heat to LED colors
-        for (size_t j = 0; j < strip_size; j++) {
-            size_t h = heat[strip_size - j - 1];
-            size_t e = ice[j];
+        for (size_t j = 0; j < strip_size_; j++) {
+            size_t h = heat_[strip_size_ - j - 1];
+            size_t e = cold_[j];
             // setPixelFireIceColor(
             //     strip, strip_size - j - 1, heat[strip_size - j - 1], ice[j]);
 
@@ -551,7 +551,7 @@ public:
             else
                 e = 0;
 
-            setPixelFireIceColor(strip_, strip_size - j - 1,
+            setPixelFireIceColor(strip_, strip_size_ - j - 1,
                                  h, e, strip_.intensity());
         }
 
@@ -564,8 +564,8 @@ private:
     size_t cooling_;
     size_t sparking_;
 
-    std::vector<uint8_t> heat, ice;
-    size_t strip_size;
+    std::vector<uint8_t> heat_, cold_;
+    size_t strip_size_;
 };
 
 template <typename LEDStrip>
@@ -679,12 +679,12 @@ public:
 
     std::vector<Pixi> pixis_;
 
-    std::default_random_engine rng;
-    std::normal_distribution<float> norm;
+    std::default_random_engine rng_;
+    std::normal_distribution<float> norm_;
 
     Fireworks(LEDStrip& strip)
         : strip_(strip),
-          rng(/* seed */ static_cast<uint32_t>(random(10000000))) {
+          rng_(/* seed */ static_cast<uint32_t>(random(10000000))) {
         pixis_.resize(strip_.size() / cracks / 10);
     }
 
@@ -708,7 +708,7 @@ public:
                 p.pos = random(strip_size);
                 float size = 10.0 + random(10000) / 1000.0;
                 for (size_t k = 0; k < cracks; ++k) {
-                    p.speed[k] = norm(rng) * size;
+                    p.speed[k] = norm_(rng_) * size;
                 }
                 p.ts = 0;
                 p.ts_end = 40 + random(120);
@@ -839,12 +839,12 @@ public:
 
     std::vector<Pixi> pixis_;
 
-    std::default_random_engine rng;
-    std::normal_distribution<float> norm;
+    std::default_random_engine rng_;
+    std::normal_distribution<float> norm_;
 
     PulseColor(LEDStrip& strip)
         : strip_(strip),
-          rng(/* seed */ static_cast<uint32_t>(random(10000000))) {
+          rng_(/* seed */ static_cast<uint32_t>(random(10000000))) {
         pixis_.resize(60);
     }
 
@@ -867,7 +867,7 @@ public:
                 p.part = random(strip_parts);
                 p.pos = random(strip_size);
                 p.size = 1.0 + random(20000) / 1000.0;
-                p.speed = norm(rng) * p.size;
+                p.speed = norm_(rng_) * p.size;
                 p.ts = 0;
                 p.ts_end = 60 + random(60);
                 p.hue = random(HSV_HUE_MAX);
@@ -904,10 +904,10 @@ class Starlight
 {
 public:
     Starlight(LEDStrip& strip) : strip_(strip) {
-        strip_size = strip.size();
+        strip_size_ = strip.size();
 
-        for (size_t i = 0; i < max_blinks; ++i) {
-            blinks[i] = strip_size;
+        for (size_t i = 0; i < max_blinks_; ++i) {
+            blinks_[i] = strip_size_;
         }
     }
 
@@ -920,48 +920,48 @@ public:
         Color w = Color(0, 0, 0, intensity);
         // Color w = Color(0, 0, 0, 2);
 
-        for (size_t i = 0; i < strip_size; ++i)
+        for (size_t i = 0; i < strip_size_; ++i)
             strip_.setPixel(i, w);
 
-        if (rng() % 128 < 16 && 0) {
+        if (rng_() % 128 < 16 && 0) {
             // add new blink
-            for (size_t i = 0; i < max_blinks; ++i) {
-                if (blinks[i] >= strip_size) {
-                    blinks[i] = rng() % strip_size;
-                    blinks_age[i] = 0;
+            for (size_t i = 0; i < max_blinks_; ++i) {
+                if (blinks_[i] >= strip_size_) {
+                    blinks_[i] = rng_() % strip_size_;
+                    blinks_age_[i] = 0;
                     break;
                 }
             }
         }
 
-        for (size_t i = 0; i < max_blinks; ++i) {
-            if (blinks[i] >= strip_size)
+        for (size_t i = 0; i < max_blinks_; ++i) {
+            if (blinks_[i] >= strip_size_)
                 continue;
 
-            if (dist(rng) * 100 < blinks_age[i]) {
-                size_t v = ldist(rng) * 10;
-                strip_.setPixel(blinks[i], v);
+            if (dist_(rng_) * 100 < blinks_age_[i]) {
+                size_t v = ldist_(rng_) * 10;
+                strip_.setPixel(blinks_[i], v);
             }
 
-            blinks_age[i]++;
-            if (blinks_age[i] > 200)
-                blinks[i] = strip_size;
+            blinks_age_[i]++;
+            if (blinks_age_[i] > 200)
+                blinks_[i] = strip_size_;
         }
 
         return 50000;
     }
 
 protected:
-    static const size_t max_blinks = 8;
-    size_t strip_size;
+    static const size_t max_blinks_ = 8;
+    size_t strip_size_;
 
-    std::default_random_engine rng { 12345 };
-    std::normal_distribution<float> dist { 1.0, 1.0 };
-    std::lognormal_distribution<float> ldist { 0.0, 0.5 };
+    std::default_random_engine rng_ { 12345 };
+    std::normal_distribution<float> dist_ { 1.0, 1.0 };
+    std::lognormal_distribution<float> ldist_ { 0.0, 0.5 };
 
-    size_t blinks[max_blinks];
-    size_t blinks_age[max_blinks];
-    size_t blinks_hue[max_blinks];
+    size_t blinks_[max_blinks_];
+    size_t blinks_age_[max_blinks_];
+    size_t blinks_hue_[max_blinks_];
 };
 
 template <typename LEDStrip>
