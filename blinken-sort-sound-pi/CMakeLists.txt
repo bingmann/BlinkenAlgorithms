@@ -15,10 +15,10 @@ if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
 endif()
 
-# default to Debug building for single-config generators
+# default to Release building for single-config generators
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message("Defaulting CMAKE_BUILD_TYPE to Debug")
-  set(CMAKE_BUILD_TYPE "Debug")
+  message("Defaulting CMAKE_BUILD_TYPE to Release")
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
 # enable warnings
