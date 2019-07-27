@@ -11,6 +11,8 @@
 #include <BlinkenAlgorithms/Animation/RandomAlgorithm.hpp>
 #include <BlinkenAlgorithms/Strip/NeoPixelBusAdapter.hpp>
 
+#include <LiquidCrystal_I2C.h>
+
 // four element pixels, RGBW SK6812 strip
 NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> strip(/* strip_size */ 300);
 
@@ -51,11 +53,44 @@ NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod> strip(/* strip_size */ 3
 bool g_terminate = false;
 size_t g_delay_factor = 1000;
 
+// set the LCD address to 0x27 for a 16 chars and 2 line display
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void OnAlgorithmName(const char* name) {
+    lcd.clear();
+    size_t x = 0, y = 0;
+    lcd.setCursor(0, 0);
+    for (size_t i = 0; name[i]; ++i) {
+        if (name[i] == '\n') {
+            lcd.setCursor(x = 0, ++y);
+        }
+        else {
+            lcd.print(name[i]);
+            if (++x == 16) {
+                lcd.setCursor(x = 0, ++y);
+            }
+        }
+    }
+}
+
 void setup() {
     Serial.begin(115200);
 
     randomSeed(analogRead(0));
     strip.Begin();
+
+    // set the LCD address to 0x27 for a 16 chars and 2 line display
+    lcd.init();
+
+    // print a message to the LCD.
+    lcd.backlight();
+    lcd.setCursor(0,0);
+    lcd.print("BlinkenSort");
+
+    // add hook to print algorithm name
+    BlinkenSort::AlgorithmNameHook = OnAlgorithmName;
+
+    BlinkenSort::intensity_flash_high = 255;
 }
 
 using namespace BlinkenAlgorithms;
