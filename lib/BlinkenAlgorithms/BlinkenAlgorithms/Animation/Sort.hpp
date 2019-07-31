@@ -899,7 +899,7 @@ public:
         else {
             Color c = HSVColor(
                 value_to_hue(array[i].value_), 255, intensity_high);
-            c.white = intensity_high / 2;
+            c.white = intensity_high;
             strip_.setPixel(i, c);
         }
     }
