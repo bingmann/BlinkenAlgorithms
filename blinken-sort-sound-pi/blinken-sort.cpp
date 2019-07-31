@@ -40,58 +40,58 @@ void RunRandomAlgorithm(LEDStrip& strip) {
     using namespace BlinkenHashtable;
     using namespace BlinkenLawaSAT;
 
-    size_t a = random(22);
+    static size_t a = 0;
     switch (a) {
     case 0:
-        RunSort(strip, "Selection Sort", SelectionSort, -44); // 60 secs
+        RunSort(strip, "MergeSort", MergeSort, -2); // 24 secs
         break;
     case 1:
         RunSort(strip, "Insertion Sort", InsertionSort, -40); // 50 secs
         break;
     case 2:
-        RunSort(strip, "Bubble Sort", BubbleSort, -60); // 63 secs
-        break;
-    case 3:
-        RunSort(strip, "Cocktail-Shaker Sort", CocktailShakerSort, -50); // 58 secs
-        break;
-    case 4:
         RunSort(strip, "QuickSort (LR)\nHoare", QuickSortLR, -6); // 27 secs
         break;
-    case 5:
+    case 3:
         RunSort(strip, "QuickSort (LL)\nLomoto", QuickSortLL, -6); // 27 secs
         break;
-    case 6:
+    case 4:
         RunSort(strip, "QuickSort\nDual Pivot", QuickSortDualPivot, -4); // 24 secs
         break;
-    case 7:
-        RunSort(strip, "MergeSort", MergeSort, -2); // 24 secs
-        break;
-    case 8:
+    case 5:
         RunSort(strip, "ShellSort", ShellSort, -3); // 42 secs
         break;
-    case 9:
+    case 6:
         RunSort(strip, "HeapSort", HeapSort, -6); // 42 secs
         break;
-    case 10:
+    case 7:
         RunSort(strip, "CycleSort", CycleSort, 16000); // 40 secs
         break;
-    case 11:
+    case 8:
         RunSort(strip, "RadixSort-MSD\n(High First)", RadixSortMSD, -4); // 27 secs
         break;
-    case 12:
+    case 9:
         RunSort(strip, "RadixSort-LSD\n(Low First)", RadixSortLSD, -1); // 27 secs
         break;
-    case 13:
+    case 10:
         RunSort(strip, "std::sort", StdSort, -6); // 22 secs
         break;
-    case 14:
+    case 11:
         RunSort(strip, "std::stable_sort", StdStableSort, -3); // 28 secs
         break;
-    case 15:
+    case 12:
         RunSort(strip, "WikiSort", WikiSort, -6); // 42 secs
         break;
-    case 16:
+    case 13:
         RunSort(strip, "TimSort", TimSort, -4); // 27 secs
+        break;
+    case 14:
+        RunSort(strip, "Selection Sort", SelectionSort, -44); // 60 secs
+        break;
+    case 15:
+        RunSort(strip, "Bubble Sort", BubbleSort, -60); // 63 secs
+        break;
+    case 16:
+        RunSort(strip, "Cocktail-Shaker Sort", CocktailShakerSort, -50); // 58 secs
         break;
     case 17:
         RunSort(strip, "BozoSort", BozoSort, -4); // 20 secs (break time)
@@ -122,6 +122,8 @@ void RunRandomAlgorithm(LEDStrip& strip) {
         //     RunLawaSAT(strip);
         //     break;
     }
+    ++a;
+    a %= 22;
 }
 
 /******************************************************************************/
@@ -279,7 +281,7 @@ void wait_forever() {
 }
 
 int main() {
-    srandom(time(nullptr));
+    srandom(123456);
 
     // ---[ Open USB Keyboard ]-------------------------------------------------
 
@@ -323,8 +325,8 @@ int main() {
     array_max = my_strip.size();
 
     // set intensity
-    my_strip.set_intensity(128);
-    BlinkenSort::intensity_flash_high = 140;
+    my_strip.set_intensity(55);
+    BlinkenSort::intensity_flash_high = 1000;
 
     // enable hooks
     BlinkenSort::SoundAccessHook = OnSoundAccess;
