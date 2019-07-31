@@ -212,9 +212,14 @@ void RunHash(LEDStrip& strip, const char* algo_name,
     ani.array_black();
     hash_function(array.data(), array.size());
 
-    printf("%s running time: %.2f fix delay_time %.2f\n",
+    static double total_time = 0, total_count = 0;
+    total_time += (millis() - ts) / 1000.0;
+    total_count += 1;
+
+    printf("%s running time: %.2f fix delay_time %.2f %.2f\n",
            algo_name, (millis() - ts) / 1000.0,
-           10.0 / ((millis() - ts) / 1000.0) * delay_time);
+           35.0 / ((millis() - ts) / 1000.0) * delay_time,
+           35.0 / (total_time / total_count) * delay_time);
 
     // printf("%s running time: %.2f\n", algo_name, (millis() - ts) / 1000.0);
 }
