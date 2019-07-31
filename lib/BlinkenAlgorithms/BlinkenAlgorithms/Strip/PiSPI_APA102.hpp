@@ -49,7 +49,7 @@ public:
                       << strerror(errno) << std::endl;
         }
 
-        spiSpeed_ = 16000000;
+        spiSpeed_ = 13000000;
         if (ioctl(fd_, SPI_IOC_WR_MAX_SPEED_HZ, &spiSpeed_) < 0) {
             std::cerr << "SPI Speed Change failure: "
                       << strerror(errno) << std::endl;
@@ -65,29 +65,41 @@ public:
 
     void setPixel(size_t index, const Color& color) {
         if (index < strip_size_) {
-            // try to transform color to RGB + brightness
+            // combine RGBW to RGB
             unsigned r = gamma8(color.r), g = gamma8(color.g), b = gamma8(color.b);
             r += gamma8(color.w), g += gamma8(color.w), b += gamma8(color.w);
-            r = r > 255 ? 255 : r, g = g > 255 ? 255 : g, b = b > 255 ? 255 : b;
-            unsigned m = std::max(std::max(r, g), b);
+            // try to transform color to RGB + brightness
+            const uint16_t mm = 0x1F;
+            unsigned m = (((std::max(std::max(r, g), b) + 1) * mm - 1) >> 8) + 1;
+            r = (mm * r + (m >> 1)) / m;
+            g = (mm * g + (m >> 1)) / m;
+            b = (mm * b + (m >> 1)) / m;
+            r = r > 255 ? 255 : r, g = g > 255 ? 255 : g;
+            b = b > 255 ? 255 : b, m = m > 31 ? 31 : m;
             strip_data_[index].r = r;
             strip_data_[index].g = g;
             strip_data_[index].b = b;
-            strip_data_[index].w = 0b11100000 | (0b00011111 & (m >> 3));
+            strip_data_[index].w = 0b11100000 | (0b00011111 & m);
         }
     }
 
     void orPixel(size_t index, const Color& color) {
         if (index < strip_size_) {
-            // try to transform color to RGB + brightness
+            // combine RGBW to RGB
             unsigned r = gamma8(color.r), g = gamma8(color.g), b = gamma8(color.b);
             r += gamma8(color.w), g += gamma8(color.w), b += gamma8(color.w);
-            r = r > 255 ? 255 : r, g = g > 255 ? 255 : g, b = b > 255 ? 255 : b;
-            unsigned m = std::max(std::max(r, g), b);
+            // try to transform color to RGB + brightness
+            const uint16_t mm = 0x1F;
+            unsigned m = (((std::max(std::max(r, g), b) + 1) * mm - 1) >> 8) + 1;
+            r = (mm * r + (m >> 1)) / m;
+            g = (mm * g + (m >> 1)) / m;
+            b = (mm * b + (m >> 1)) / m;
+            r = r > 255 ? 255 : r, g = g > 255 ? 255 : g;
+            b = b > 255 ? 255 : b, m = m > 31 ? 31 : m;
             strip_data_[index].r |= r;
             strip_data_[index].g |= g;
             strip_data_[index].b |= b;
-            strip_data_[index].w |= 0b11100000 | (0b00011111 & (m >> 3));
+            strip_data_[index].w |= 0b11100000 | (0b00011111 & m);
         }
     }
 
