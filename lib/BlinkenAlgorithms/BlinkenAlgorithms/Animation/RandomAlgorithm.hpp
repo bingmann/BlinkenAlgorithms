@@ -30,88 +30,90 @@ void RunRandomAlgorithmAnimation(LEDStrip& strip) {
     using namespace BlinkenHashtable;
     using namespace BlinkenLawaSAT;
 
-    static size_t a = 16;
+    static size_t a = 0;
     //size_t a = random(22);
-    //a = 4;
+    //a = 20;
     switch (a) {
     case 0:
-        RunSort(strip, "Selection Sort", SelectionSort, 400); // 20 secs
+        RunSort(strip, "MergeSort", MergeSort, 9500); // 24 secs
         break;
     case 1:
-        RunSort(strip, "Insertion Sort", InsertionSort, 250); // 17 secs
+        RunSort(strip, "Insertion Sort", InsertionSort, 750); // 50 secs
         break;
     case 2:
-        RunSort(strip, "Bubble Sort", BubbleSort, 210); // 20 secs
+        RunSort(strip, "QuickSort (LR)\nHoare", QuickSortLR, 5000); // 27 secs
         break;
     case 3:
-        RunSort(strip, "Cocktail-Shaker Sort", CocktailShakerSort, 250); // 20 secs
+        RunSort(strip, "QuickSort (LL)\nLomoto", QuickSortLL, 4600); // 27 secs
         break;
     case 4:
-        RunSort(strip, "QuickSort (LR)\nHoare", QuickSortLR, 2000); // 10 secs
+        RunSort(strip, "QuickSort\nDual Pivot", QuickSortDualPivot, 5200); // 24 secs
         break;
     case 5:
-        RunSort(strip, "QuickSort (LL)\nLomoto", QuickSortLL, 1700); // 10 secs
+        RunSort(strip, "ShellSort", ShellSort, 6500); // 42 secs
         break;
     case 6:
-        RunSort(strip, "QuickSort\nDual Pivot", QuickSortDualPivot, 2000); // 9 secs
+        RunSort(strip, "HeapSort", HeapSort, 4800); // 42 secs
         break;
     case 7:
-        RunSort(strip, "MergeSort", MergeSort, 4000); // 10 secs
+        RunSort(strip, "CycleSort", CycleSort, 44000); // 40 secs
         break;
     case 8:
-        RunSort(strip, "ShellSort", ShellSort, 2500); // 15 secs
+        RunSort(strip, "RadixSort-MSD\n(High First)", RadixSortMSD, 4200); // 27 secs
         break;
     case 9:
-        RunSort(strip, "HeapSort", HeapSort, 1800); // 15 secs
+        RunSort(strip, "RadixSort-LSD\n(Low First)", RadixSortLSD, 17500); // 27 secs
         break;
     case 10:
-        RunSort(strip, "CycleSort", CycleSort, 130); // 20 secs
+        RunSort(strip, "std::sort", StdSort, 4500); // 22 secs
         break;
     case 11:
-        RunSort(strip, "RadixSortMSD", RadixSortMSD, 2000); // 13 secs
+        RunSort(strip, "std::stable_sort", StdStableSort, 7300); // 28 secs
         break;
     case 12:
-        RunSort(strip, "RadixSortLSD", RadixSortLSD, 8500); // 13 secs
+        RunSort(strip, "WikiSort", WikiSort, 3900); // 42 secs
         break;
     case 13:
-        RunSort(strip, "std::sort", StdSort, 2100); // 10 secs
+        RunSort(strip, "TimSort", TimSort, 5300); // 27 secs
         break;
     case 14:
-        RunSort(strip, "std::stable_sort", StdStableSort, 3200); // 12.2 secs
+        RunSort(strip, "Selection Sort", SelectionSort, 1250); // 60 secs
         break;
     case 15:
-        RunSort(strip, "WikiSort", WikiSort, 1600); // 18 secs
+        RunSort(strip, "Bubble Sort", BubbleSort, 650); // 60 secs
         break;
     case 16:
-        RunSort(strip, "TimSort", TimSort, 2400); // 12 secs
+        RunSort(strip, "Cocktail-Shaker Sort", CocktailShakerSort, 770); // 58 secs
         break;
     case 17:
         RunSort(strip, "BozoSort", BozoSort); // 20 secs (break time)
         break;
 
-#define TRunHash(A, T) \
-    RunHash(strip, #A, A, T)
+    /*------------------------------------------------------------------------*/
 
     case 18:
-        TRunHash(LinearProbingHT, 3000); // 10.8 secs
+        RunHash(strip, "Linear Probe\nHash Table", // 41 secs
+                LinearProbingHT, 40000);
         break;
     case 19:
-        TRunHash(QuadraticProbingHT, 5000); // 10.8 secs
+        RunHash(strip, "Quadratic Probe Hash Table", // 35 secs
+                QuadraticProbingHT, 27000);
         break;
     case 20:
-        TRunHash(CuckooHashingTwo, 12000); // 10 secs
+        RunHash(strip, "Cuckoo Two\nHash Table", // 35 secs
+                CuckooHashingTwo, 40000);
         break;
     case 21:
-        TRunHash(CuckooHashingThree, 4500); // 11 secs
+        RunHash(strip, "Cuckoo Three\nHash Table", // 35 secs
+                CuckooHashingThree, 35000);
         break;
-#if 0
+
+    /*------------------------------------------------------------------------*/
 
         // case 22:
         //     RunLawaSAT(strip);
         //     break;
-#endif
     }
-#undef TRunSort
     ++a;
     a %= 22;
 }
