@@ -37,7 +37,7 @@ void LinearProbingHT(Item* A, size_t n) {
 
     size_t cshift = random(n);
 
-    for (size_t i = 0; i < n * 95 / 100; ++i) {
+    for (size_t i = 0; i < n * 90 / 100; ++i) {
         // pick a new item to insert
         Item v = Item((i + cshift) % n);
 
@@ -58,7 +58,7 @@ void QuadraticProbingHT(Item* A, size_t n) {
 
     size_t cshift = random(n);
 
-    for (size_t i = 0; i < n * 95 / 100; ++i) {
+    for (size_t i = 0; i < n * 90 / 100; ++i) {
         // pick a new item to insert
         Item v = Item((i + cshift) % n);
 
