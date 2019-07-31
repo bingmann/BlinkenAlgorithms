@@ -458,21 +458,21 @@ void Merge(Item* A, size_t lo, size_t mid, size_t hi) {
     // merge
     size_t i = lo, j = mid, o = 0; // first and second halves
     while (i < mid && j < hi && !g_terminate) {
-        // copy out for fewer time steps
-        Item ai = A[i], aj = A[j];
-
-        out[o++] = (ai < aj ? (++i, ai) : (++j, aj));
+        if (A[i] < A[j])
+            out[o++] = std::move(A[i++]);
+        else
+            out[o++] = std::move(A[j++]);
     }
 
     // copy rest
     while (i < mid)
-        out[o++] = A[i++];
+        out[o++] = std::move(A[i++]);
     while (j < hi)
-        out[o++] = A[j++];
+        out[o++] = std::move(A[j++]);
 
     // copy back
     for (i = 0; i < hi - lo && !g_terminate; ++i)
-        A[lo + i] = out[i];
+        A[lo + i] = std::move(out[i]);
 }
 
 void MergeSort(Item* A, size_t lo, size_t hi) {
