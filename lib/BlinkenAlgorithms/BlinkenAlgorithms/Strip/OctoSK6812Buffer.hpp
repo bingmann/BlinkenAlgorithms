@@ -37,8 +37,8 @@ template <typename OctoSK6812>
 class OctoSK6812Buffer : public LEDStripBase
 {
 public:
-    explicit OctoSK6812Buffer(OctoSK6812& strip, size_t active_parts = 8,
-                              size_t active_size = 300)
+    OctoSK6812Buffer(OctoSK6812& strip, size_t active_parts,
+                     size_t active_size)
         : LEDStripBase(), strip_(strip),
           strip_size_(strip.numPixels() / 8),
           active_parts_(active_parts),
@@ -46,6 +46,10 @@ public:
           buffer_(new Color[active_size]) {
         memset(buffer_, 0, sizeof(Color) * active_size_);
     }
+
+    explicit OctoSK6812Buffer(OctoSK6812& strip, size_t active_parts = 8)
+        : OctoSK6812Buffer(strip, active_parts,
+                           strip.numPixels() / 8 * active_parts) { }
 
     ~OctoSK6812Buffer() {
         delete[] buffer_;

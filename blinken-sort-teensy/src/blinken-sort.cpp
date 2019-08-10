@@ -25,7 +25,7 @@ int drawMemory[strip_size * 8];
 OctoSK6812 base_strip(strip_size, displayMemory, drawMemory, SK6812_GRBW);
 
 using Strip = OctoSK6812Adapter<OctoSK6812>;
-Strip strip(base_strip, /* active_parts */ 1);
+Strip strip(base_strip, /* active_parts */ 8);
 
 /******************************************************************************/
 

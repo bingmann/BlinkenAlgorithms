@@ -118,9 +118,9 @@ void RunRandomAlgorithm(LEDStrip& strip) {
 
     /*------------------------------------------------------------------------*/
 
-        // case 22:
-        //     RunLawaSAT(strip);
-        //     break;
+    case 22:
+        // RunLawaSAT(strip);
+        break;
     }
     ++a;
     a %= 22;

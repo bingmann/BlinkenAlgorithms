@@ -31,8 +31,8 @@ void RunRandomAlgorithmAnimation(LEDStrip& strip) {
     using namespace BlinkenLawaSAT;
 
     static size_t a = 0;
-    //size_t a = random(22);
-    //a = 20;
+    // size_t a = random(22);
+    // a = 20;
     switch (a) {
     case 0:
         RunSort(strip, "MergeSort", MergeSort, 9500); // 24 secs
@@ -110,9 +110,9 @@ void RunRandomAlgorithmAnimation(LEDStrip& strip) {
 
     /*------------------------------------------------------------------------*/
 
-        // case 22:
-        //     RunLawaSAT(strip);
-        //     break;
+    case 22:
+        // RunLawaSAT(strip);
+        break;
     }
     ++a;
     a %= 22;

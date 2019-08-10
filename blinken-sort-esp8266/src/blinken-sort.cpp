@@ -84,7 +84,7 @@ void setup() {
 
     // print a message to the LCD.
     lcd.backlight();
-    lcd.setCursor(0,0);
+    lcd.setCursor(0, 0);
     lcd.print("BlinkenSort");
 
     // add hook to print algorithm name
