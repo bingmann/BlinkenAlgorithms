@@ -1,5 +1,5 @@
 /*******************************************************************************
- * random-flux-loop-teensy/src/neopixel.cpp
+ * random-flux-teensy/src/neopixel.cpp
  *
  * Copyright (C) 2018 Timo Bingmann <tb@panthema.net>
  *

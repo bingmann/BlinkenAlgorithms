@@ -1,5 +1,5 @@
 /*******************************************************************************
- * random-flux-loop-esp8266/src/neopixel.cpp
+ * random-flux-esp8266/src/neopixel.cpp
  *
  * Copyright (C) 2018 Timo Bingmann <tb@panthema.net>
  *

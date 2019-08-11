@@ -1,5 +1,5 @@
 /*******************************************************************************
- * random-flux-loop-pi/neopixel.cpp
+ * random-flux-pi/neopixel.cpp
  *
  * Copyright (C) 2018 Timo Bingmann <tb@panthema.net>
  *

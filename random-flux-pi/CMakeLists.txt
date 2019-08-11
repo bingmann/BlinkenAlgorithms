@@ -1,5 +1,5 @@
 ################################################################################
-# random-flux-loop-pi/CMakeLists.txt
+# random-flux-pi/CMakeLists.txt
 #
 # Copyright (C) 2018 Timo Bingmann <tb@panthema.net>
 #
