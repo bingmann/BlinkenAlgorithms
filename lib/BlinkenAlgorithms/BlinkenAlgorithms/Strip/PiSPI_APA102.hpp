@@ -103,6 +103,31 @@ public:
         }
     }
 
+    void addPixel(size_t index, const Color& color) {
+        if (index < strip_size_) {
+            // combine RGBW to RGB
+            unsigned r = gamma8(color.r), g = gamma8(color.g), b = gamma8(color.b);
+            r += gamma8(color.w), g += gamma8(color.w), b += gamma8(color.w);
+            // try to transform color to RGB + brightness
+            const uint16_t mm = 0x1F;
+            unsigned m = (((std::max(std::max(r, g), b) + 1) * mm - 1) >> 8) + 1;
+            r = (mm * r + (m >> 1)) / m;
+            g = (mm * g + (m >> 1)) / m;
+            b = (mm * b + (m >> 1)) / m;
+            r = r > 255 ? 255 : r, g = g > 255 ? 255 : g;
+            b = b > 255 ? 255 : b, m = m > 31 ? 31 : m;
+            strip_data_[index].r =
+                std::min(255, static_cast<uint16_t>(r) + strip_data_[index].r);
+            strip_data_[index].g =
+                std::min(255, static_cast<uint16_t>(g) + strip_data_[index].g);
+            strip_data_[index].b =
+                std::min(255, static_cast<uint16_t>(b) + strip_data_[index].b);
+            strip_data_[index].w =
+                0b11100000 | std::min(
+                    31, (0b00011111 & m) + (0b00011111 & strip_data_[index].w));
+        }
+    }
+
     bool busy() const { return false; }
 
     void show() {

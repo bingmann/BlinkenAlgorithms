@@ -38,14 +38,8 @@ public:
                              gamma8(c.b), gamma8(c.w));
     }
 
-    void orPixel(size_t i, const Color& c) {
-        uint32_t p = strip_.getPixelColor(i);
-        uint8_t w = (p >> 24) & 0xFF;
-        uint8_t r = (p >> 16) & 0xFF;
-        uint8_t g = (p >> 8) & 0xFF;
-        uint8_t b = (p >> 0) & 0xFF;
-        setPixel(i, Color(gamma8(c.r) | r, gamma8(c.g) | g,
-                          gamma8(c.b) | b, gamma8(c.w) | w));
+    Color getPixel(size_t i) const {
+        return ColorRGBW(strip_.getPixelColor(i));
     }
 
 private:

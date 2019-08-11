@@ -643,7 +643,7 @@ public:
                 p.intensity = intensity;
                 p.color = WheelColor(p.hue, p.intensity);
             }
-            strip_.setPixel(p.part * strip_size + p.pos, p.color);
+            strip_.addPixel(p.part * strip_size + p.pos, p.color);
             p.pos += p.speed;
             if (p.pos < 0 || p.pos >= strip_size) {
                 if (i + 1 < free_) {
@@ -814,9 +814,9 @@ struct KnightSnakes {
                 }
 
                 if (x < strip_size)
-                    strip_.orPixel(x, col);
+                    strip_.addPixel(x, col);
                 else
-                    strip_.orPixel(2 * strip_size - x, col);
+                    strip_.addPixel(2 * strip_size - x, col);
             }
         }
 

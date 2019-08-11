@@ -54,18 +54,33 @@ public:
 
     void setPixel(size_t i, const Color& c) {
         Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
-        strip_.setPixel(i, c.v);
+        setPixelRaw(i, c);
+    }
+
+    Color getPixel(size_t i) const {
+        return ColorRGBW(strip_.getPixel(i));
     }
 
     void orPixel(size_t i, const Color& c) {
+        Color c1 = strip_.getPixel(i);
         Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
-        strip_.setPixel(i, strip_.getPixel(i) | c.v);
+        setPixelRaw(i, c1 | c2);
+    }
+
+    void addPixel(size_t i, const Color& c) {
+        Color c1 = strip_.getPixel(i);
+        Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
+        setPixelRaw(i, c1 + c2);
     }
 
 private:
     OctoSK6812& strip_;
 
     size_t active_parts_;
+
+    void setPixelRaw(size_t i, const Color& c) {
+        strip_.setPixel(i, c.v);
+    }
 };
 
 } // namespace BlinkenAlgorithms

@@ -40,6 +40,29 @@ struct Color {
 
     Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w)
         : w(w), b(b), g(g), r(r) { }
+
+    //! return Color struct from raw WBGR, not default one-value constructor
+    static Color ColorWBGR(uint32_t i) {
+        Color c;
+        c.v = i;
+        return c;
+    }
+
+    //! return Color struct from raw RGBW
+    static Color ColorRGBW(uint32_t i) {
+        return ColorWBGR(__builtin_bswap32(i));
+    }
+
+    Color operator | (const Color& c2) const {
+        return ColorWBGR(v | c2.v);
+    }
+
+    Color operator + (const Color& c2) const {
+        return Color(std::min(255, static_cast<uint16_t>(r) + c2.r),
+                     std::min(255, static_cast<uint16_t>(b) + c2.b),
+                     std::min(255, static_cast<uint16_t>(g) + c2.g),
+                     std::min(255, static_cast<uint16_t>(w) + c2.w));
+    }
 };
 
 //! Input a value 0 to 255 to get a color value.

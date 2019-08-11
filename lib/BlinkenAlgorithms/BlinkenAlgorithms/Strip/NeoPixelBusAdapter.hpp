@@ -35,19 +35,33 @@ public:
     }
 
     void setPixel(size_t i, const Color& c) {
-        strip_.SetPixelColor(
-            i, RgbwColor(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w)));
+        setPixelRaw(i, Color(gamma8(c.r), gamma8(c.g),
+                             gamma8(c.b), gamma8(c.w)));
+    }
+
+    Color getPixel(size_t i) const {
+        RgbwColor c = strip_.GetPixelColor(i);
+        return Color(c.R, c.G, c.B, c.W);
     }
 
     void orPixel(size_t i, const Color& c) {
-        RgbwColor b = strip_.GetPixelColor(i);
-        strip_.SetPixelColor(
-            i, RgbwColor(gamma8(c.r) | b.R, gamma8(c.g) | b.G,
-                         gamma8(c.b) | b.B, gamma8(c.w) | b.W));
+        Color c1 = getPixel(i);
+        Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
+        return setPixelRaw(i, c1 | c2);
+    }
+
+    void addPixel(size_t i, const Color& c) {
+        Color c1 = getPixel(i);
+        Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
+        return setPixelRaw(i, c1 + c2);
     }
 
 private:
     NeoPixelBus& strip_;
+
+    void setPixelRaw(size_t i, const Color& c) {
+        strip_.SetPixelColor(i, RgbwColor(c.r, c.g, c.b, c.w));
+    }
 };
 
 } // namespace BlinkenAlgorithms

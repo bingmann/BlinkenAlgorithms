@@ -72,18 +72,23 @@ public:
 
     void setPixel(size_t i, const Color& c) {
         Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
-        if (i < active_size_) {
-            buffer_[i] = c2;
-        }
+        setPixelRaw(i, c2);
+    }
+
+    Color getPixel(size_t i) const {
+        return i < active_size_ ? buffer_[i] : Color(0);
     }
 
     void orPixel(size_t i, const Color& c) {
+        Color c1 = getPixel(i);
         Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
-        if (i < active_size_) {
-            Color c1 = buffer_[i];
-            buffer_[i] = Color(
-                c1.r | c2.r, c1.g | c2.g, c1.b | c2.b, c1.w | c2.w);
-        }
+        setPixelRaw(i, c1 | c2);
+    }
+
+    void addPixel(size_t i, const Color& c) {
+        Color c1 = getPixel(i);
+        Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
+        setPixelRaw(i, c1 + c2);
     }
 
 private:
@@ -94,6 +99,11 @@ private:
     size_t active_size_;
 
     Color* buffer_;
+
+    void setPixelRaw(size_t i, const Color& c) {
+        if (i < active_size_)
+            buffer_[i] = c;
+    }
 };
 
 } // namespace BlinkenAlgorithms
