@@ -124,7 +124,7 @@ public:
                 std::min(255, static_cast<uint16_t>(b) + strip_data_[index].b);
             strip_data_[index].w =
                 0b11100000 | std::min(
-                    31, (0b00011111 & m) + (0b00011111 & strip_data_[index].w));
+                    31u, (0b00011111 & m) + (0b00011111 & strip_data_[index].w));
         }
     }
 
