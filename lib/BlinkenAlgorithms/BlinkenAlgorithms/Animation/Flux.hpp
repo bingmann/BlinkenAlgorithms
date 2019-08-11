@@ -278,7 +278,7 @@ public:
 
     LEDStrip& strip_;
 
-    size_t pix_ = 4;
+    size_t pix_ = 0;
 
     uint32_t seed_;
 
@@ -306,7 +306,7 @@ public:
     }
 };
 
-template <typename LEDStrip>
+template <typename LEDStrip, bool TrueHSV = false>
 class SparkleRGB
 {
 public:
@@ -318,7 +318,7 @@ public:
 
     LEDStrip& strip_;
 
-    size_t pix_ = 4;
+    size_t pix_ = 0;
 
     uint32_t seed_;
 
@@ -336,7 +336,11 @@ public:
 
         for (size_t r = 0; r < multi_; ++r) {
             strip_.setPixel(
-                rng1_() % strip_size, WheelColor(rng3_(), intensity));
+                rng1_() % strip_size,
+                TrueHSV
+                ? HSVColor(rng3_() % HSV_HUE_MAX, 255,
+                           intensity)
+                : WheelColor(rng3_(), intensity));
 
             if (pix_ >= strip_size / density_)
                 strip_.setPixel(rng2_() % strip_size, Color(0));
@@ -568,7 +572,7 @@ private:
     size_t strip_size_;
 };
 
-template <typename LEDStrip>
+template <typename LEDStrip, bool TrueHSV = false>
 class SprayColor
 {
 public:
@@ -577,7 +581,7 @@ public:
         float pos;
         float speed;
         Color color = Color(0);
-        uint8_t hue;
+        uint16_t hue;
         uint8_t intensity;
     };
 
@@ -622,9 +626,10 @@ public:
                     p.speed = -(1.0 + random(10) / 10.0);
                 }
 
-                p.hue = random(256);
+                p.hue = TrueHSV ? random(HSV_HUE_MAX) : random(256);
                 p.intensity = strip_.intensity();
-                p.color = WheelColor(p.hue, p.intensity);
+                p.color = TrueHSV ? HSVColor(p.hue, 255, p.intensity)
+                          : WheelColor(p.hue, p.intensity);
             }
         }
 
@@ -712,7 +717,7 @@ public:
                 }
                 p.ts = 0;
                 p.ts_end = 40 + random(120);
-                p.hue = random(256);
+                p.hue = random(HSV_HUE_MAX);
                 p.intensity = strip_.intensity();
                 p.color = WheelColor(p.hue, p.intensity);
             }
@@ -729,7 +734,7 @@ public:
             Pixi& p = pixis_[i];
             if (p.intensity != intensity) {
                 p.intensity = intensity;
-                p.color = WheelColor(p.hue, p.intensity);
+                p.color = HSVColor(p.hue, 255, p.intensity);
             }
             for (size_t k = 0; k < cracks; ++k) {
                 ssize_t x = p.pos + p.speed[k] * sin(p.ts * M_PI / p.ts_end);
@@ -838,21 +843,22 @@ public:
     LEDStrip& strip_;
 
     std::vector<Pixi> pixis_;
+    size_t pixis_count_ = 0;
 
     std::default_random_engine rng_;
     std::normal_distribution<float> norm_;
 
-    PulseColor(LEDStrip& strip)
+    PulseColor(LEDStrip& strip, size_t density_ratio = 6)
         : strip_(strip),
           rng_(/* seed */ static_cast<uint32_t>(random(10000000))) {
-        pixis_.resize(60);
+        pixis_.resize(strip_.size() / density_ratio);
     }
 
     uint32_t operator () (uint32_t /* s */) {
         size_t strip_size = strip_.size();
         size_t strip_parts = 1;
 
-        if (random(12) < 4)
+        while (pixis_count_ < pixis_.size())
         {
             // make new pixi
             size_t j;
@@ -869,8 +875,9 @@ public:
                 p.size = 1.0 + random(20000) / 1000.0;
                 p.speed = norm_(rng_) * p.size;
                 p.ts = 0;
-                p.ts_end = 60 + random(60);
+                p.ts_end = 1 + random(10);
                 p.hue = random(HSV_HUE_MAX);
+                ++pixis_count_;
             }
         }
 
@@ -884,18 +891,23 @@ public:
 
             Pixi& p = pixis_[i];
 
-            Color color = HSVColor(
-                p.hue, 255, intensity * sin(p.ts * M_PI / p.ts_end));
             for (size_t k = 0; k < p.size; ++k) {
-                strip_.orPixel(p.part * strip_size + p.pos + k - p.size / 2.0, color);
+                Color color = HSVColor(
+                    p.hue, 255, intensity
+                    * sin(p.ts * M_PI / p.ts_end)
+                    * sin(k * M_PI / p.size));
+                strip_.orPixel(p.part * strip_size + p.pos + k - p.size / 2.0,
+                               color);
             }
 
             p.ts++;
-            if (p.ts >= p.ts_end)
+            if (p.ts >= p.ts_end) {
                 p.on = false;
+                --pixis_count_;
+            }
         }
 
-        return 40;
+        return 10;
     }
 };
 
