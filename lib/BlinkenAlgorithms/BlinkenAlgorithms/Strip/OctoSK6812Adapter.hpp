@@ -54,7 +54,7 @@ public:
 
     void setPixel(size_t i, const Color& c) {
         Color c2(gamma8(c.r), gamma8(c.g), gamma8(c.b), gamma8(c.w));
-        setPixelRaw(i, c);
+        setPixelRaw(i, c2);
     }
 
     Color getPixel(size_t i) const {
