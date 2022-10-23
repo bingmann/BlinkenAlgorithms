@@ -100,7 +100,7 @@ public:
 
     uint32_t operator () (uint32_t /* s */) {
         size_t strip_size = strip_.size();
-        unsigned intensity = strip_.intensity();
+        unsigned intensity = std::min<uint8_t>(strip_.intensity(), 255u);
 
         for (size_t i = 0; i < strip_size; ++i) {
             strip_.setPixel(i, WheelColor(i, intensity));
@@ -125,7 +125,7 @@ public:
 
     uint32_t operator () (uint32_t s) {
         size_t strip_size = strip_.size();
-        unsigned intensity = strip_.intensity();
+        unsigned intensity = std::min<uint8_t>(strip_.intensity(), 255u);
 
         for (size_t i = 0; i < strip_size; ++i) {
             size_t j = i / 300;
@@ -152,7 +152,7 @@ public:
 
     uint32_t operator () (uint32_t s) {
         size_t strip_size = strip_.size();
-        unsigned intensity = strip_.intensity();
+        unsigned intensity = std::min<uint8_t>(strip_.intensity(), 255u);
 
         for (size_t i = 0; i < strip_size; ++i) {
             Color c = HSVColor(i % HSV_HUE_MAX, 255, intensity);
@@ -178,7 +178,7 @@ public:
 
     uint32_t operator () (uint32_t s) {
         size_t strip_size = strip_.size();
-        unsigned intensity = strip_.intensity();
+        unsigned intensity = std::min<uint8_t>(strip_.intensity(), 255u);
 
         for (size_t i = 0; i < strip_size; ++i) {
             size_t j = i / 300;
