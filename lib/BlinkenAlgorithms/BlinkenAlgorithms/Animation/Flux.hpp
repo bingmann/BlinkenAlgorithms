@@ -273,10 +273,12 @@ template <typename LEDStrip>
 class SparkleWhite
 {
 public:
-    SparkleWhite(LEDStrip& strip, size_t speed = 100, size_t density = 10)
+    SparkleWhite(LEDStrip& strip, size_t speed, size_t density,
+                 Color color)
         : strip_(strip),
           seed_(static_cast<uint32_t>(random(10000000))),
-          speed_(speed), density_(density) { }
+          speed_(speed), density_(density),
+          color_(color) { }
 
     LEDStrip& strip_;
 
@@ -286,16 +288,16 @@ public:
 
     size_t speed_;
     size_t density_;
+    Color color_;
 
     std::default_random_engine rng1_{ seed_ };
     std::default_random_engine rng2_{ seed_ };
 
     uint32_t operator () (uint32_t s) {
         size_t strip_size = strip_.size();
-        Color w = Color(strip_.intensity());
 
         if (s % 2 == 0) {
-            strip_.setPixel(rng1_() % strip_size, w);
+            strip_.setPixel(rng1_() % strip_size, color_);
         }
         else {
             if (pix_ >= strip_size / density_)
@@ -377,12 +379,18 @@ void setPixelFireColor(Strip& strip, int index, uint8_t temperature) {
         c = Color(heatramp, 0, 0);
     }
 
+    size_t intensity = strip.intensity();
+    c.r = c.r * intensity / 256;
+    c.g = c.g * intensity / 256;
+    c.b = c.b * intensity / 256;
+
     strip.setPixel(index, c);
 }
 
 template <typename Strip>
-void setPixelFireIceColor(Strip& strip, int index,
-                          uint8_t heat, uint8_t ice, uint8_t intensity) {
+void setPixelFireIceLimeColor(
+    Strip& strip, int index,
+    uint8_t heat, uint8_t ice, uint8_t lime, uint8_t intensity) {
     // Scale 'heat' down from 0-255 to 0-191
     uint8_t h192 = round((heat / 255.0) * 191);
 
@@ -393,6 +401,10 @@ void setPixelFireIceColor(Strip& strip, int index,
     uint8_t i192 = round((ice / 255.0) * 191);
     uint8_t iceramp = i192 & 0x3F; // 0..63
     iceramp <<= 2;                 // scale up to 0..252
+
+    uint8_t l192 = round((lime / 255.0) * 191);
+    uint8_t limeramp = l192 & 0x3F; // 0..63
+    limeramp <<= 2;                 // scale up to 0..252
 
     uint16_t r = 0, g = 0, b = 0;
 
@@ -423,6 +435,19 @@ void setPixelFireIceColor(Strip& strip, int index,
         b += iceramp;
     }
 
+    if (l192 > 0x80) { // hottest
+        r += limeramp;
+        g += 255;
+        b += 255;
+    }
+    else if (l192 > 0x40) { // middle
+        g += 255;
+        b += limeramp;
+    }
+    else {  // coolest
+        g += limeramp;
+    }
+
     if (r >= 256)
         r = 255;
     if (g >= 256)
@@ -441,8 +466,13 @@ template <typename LEDStrip>
 class Fire
 {
 public:
-    Fire(LEDStrip& strip, size_t cooling = 20, size_t sparking = 160)
-        : strip_(strip), cooling_(cooling), sparking_(sparking) {
+    Fire(LEDStrip& strip,
+         unsigned color = 0,
+         size_t cooling = 20, size_t sparking = 160,
+         size_t speed = 40000)
+        : strip_(strip),  color_(color),
+          cooling_(cooling), sparking_(sparking),
+          speed_(speed) {
         strip_size_ = strip.size();
         heat_.resize(strip_size_);
     }
@@ -469,23 +499,38 @@ public:
 
         // Step 3. Randomly ignite new 'sparks' near the bottom
         if (random(255) < sparking_) {
-            size_t y = random(7);
+            size_t y = random(5);
             heat_[y] = heat_[y] + random(160, 255);
             // heat[y] = random(160,255);
         }
 
         // Step 4. Convert heat to LED colors
         for (size_t j = 0; j < strip_size_; j++) {
-            setPixelFireColor(strip_, j, heat_[j]);
-            // setPixelFireIceColor(strip_, j, 0, heat[j]);
+            if (color_ == 0) {
+                setPixelFireIceLimeColor(
+                    strip_, j, heat_[j], 0, 0,
+                    strip_.intensity());
+            }
+            else if (color_ == 1) {
+                setPixelFireIceLimeColor(
+                    strip_, j, 0, heat_[j], 0,
+                    strip_.intensity());
+            }
+            else {
+                setPixelFireIceLimeColor(
+                    strip_, j, 0, 0, heat_[j],
+                    strip_.intensity());
+            }
         }
 
-        return 10000;
+        return speed_;
     }
 
 private:
+    unsigned color_;
     size_t cooling_;
     size_t sparking_;
+    size_t speed_;
 
     std::vector<uint8_t> heat_;
     size_t strip_size_;
@@ -495,8 +540,13 @@ template <typename LEDStrip>
 class FireIce
 {
 public:
-    FireIce(LEDStrip& strip, size_t cooling = 20, size_t sparking = 160)
-        : strip_(strip), cooling_(cooling), sparking_(sparking) {
+    FireIce(LEDStrip& strip,
+            size_t color,
+            size_t cooling = 20, size_t sparking = 160,
+            size_t speed = 40000)
+        : strip_(strip),
+          color_(color), cooling_(cooling), sparking_(sparking),
+          speed_(speed) {
         strip_size_ = strip_.size();
         heat_.resize(strip_size_);
         cold_.resize(strip_size_);
@@ -557,18 +607,28 @@ public:
             else
                 e = 0;
 
-            setPixelFireIceColor(strip_, strip_size_ - j - 1,
-                                 h, e, strip_.intensity());
+            if (color_ == 0) {
+                setPixelFireIceLimeColor(
+                    strip_, strip_size_ - j - 1,
+                    h, e, 0, strip_.intensity());
+            }
+            else {
+                setPixelFireIceLimeColor(
+                    strip_, strip_size_ - j - 1,
+                    0, h, e, strip_.intensity());
+            }
         }
 
-        return 10000;
+        return speed_;
     }
 
     LEDStrip& strip_;
 
 private:
+    unsigned color_;
     size_t cooling_;
     size_t sparking_;
+    size_t speed_;
 
     std::vector<uint8_t> heat_, cold_;
     size_t strip_size_;
@@ -749,7 +809,7 @@ public:
                 p.on = false;
         }
 
-        return 50;
+        return 100;
     }
 };
 
@@ -1052,12 +1112,15 @@ void RunRandomFluxAnimations(LEDStrip& strip) {
 
         case 4:
             RunAnimation(
-                SparkleWhite<LEDStrip>(strip),
+                SparkleWhite<LEDStrip>(
+                    strip, /* speed */ 3000, /* density */ 30,
+                    Color(strip.intensity())),
                 time_limit);
             break;
         case 5:
             RunAnimation(
-                SparkleWhite<LEDStrip>(strip, /* speed */ 2000, /* density */ 5),
+                SparkleWhite<LEDStrip>(strip, /* speed */ 2000, /* density */ 5,
+                                       Color(strip.intensity())),
                 time_limit);
             break;
         case 6:
@@ -1078,7 +1141,7 @@ void RunRandomFluxAnimations(LEDStrip& strip) {
             break;
         case 9:
             RunAnimation(
-                FireIce<LEDStrip>(strip),
+                FireIce<LEDStrip>(strip, /* color */ 0),
                 time_limit);
             break;
 
