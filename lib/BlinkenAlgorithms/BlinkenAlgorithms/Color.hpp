@@ -110,6 +110,8 @@ static inline Color WheelColorWhite(uint32_t i, uint8_t intensity) {
         0, 0, (256 - i * 4) * intensity / 255u, (i * 4) * intensity / 255u);
 }
 
+/******************************************************************************/
+
 //! hue ranges 0--HSV_HUE_MAX=1535, sat and val range 0-255.
 static inline Color HSVColor(uint16_t hue, uint8_t sat, uint8_t val) {
     /*
@@ -224,6 +226,41 @@ static inline Color HSVColor(uint16_t hue, uint8_t sat, uint8_t val) {
 
     return Color(_r, _g, _b);
 }
+
+/******************************************************************************/
+// HSVCache
+
+//! HSVCache caches calculated HSVColor results with fixed saturation and
+//! value. If the saturation or value changes, the cache is recalculated.
+class HSVCache
+{
+public:
+    HSVCache(uint8_t sat = 0, uint8_t val = 0) {
+        update_cache(sat, val);
+    }
+
+    void update_cache(uint8_t sat, uint8_t val) {
+        for (size_t i = 0; i < HSV_HUE_STEPS; ++i) {
+            cache_[i] = HSVColor(i, sat, val);
+        }
+        cache_sat_ = sat, cache_val_ = val;
+    }
+
+    //! hue ranges 0--HSV_HUE_MAX=1535, sat and val range 0-255.
+    Color get(uint16_t hue, uint8_t sat, uint8_t val) {
+        if (sat != cache_sat_ || val != cache_val_)
+            update_cache(sat, val);
+
+        return hue < HSV_HUE_STEPS ? cache_[hue] : Color(0);
+    }
+
+private:
+    Color cache_[HSV_HUE_STEPS];
+    uint8_t cache_sat_;
+    uint8_t cache_val_;
+};
+
+/******************************************************************************/
 
 } // namespace BlinkenAlgorithms
 

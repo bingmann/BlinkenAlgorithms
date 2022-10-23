@@ -176,6 +176,8 @@ public:
     LEDStrip& strip_;
     size_t speed_;
 
+    HSVCache hsv_;
+
     uint32_t operator () (uint32_t s) {
         size_t strip_size = strip_.size();
         unsigned intensity = std::min<uint8_t>(strip_.intensity(), 255u);
@@ -183,7 +185,7 @@ public:
         for (size_t i = 0; i < strip_size; ++i) {
             size_t j = i / 300;
             strip_.setPixel(
-                i, HSVColor((s + j * HSV_HUE_MAX / 5) % HSV_HUE_MAX,
+                i, hsv_.get((s + j * HSV_HUE_MAX / 5) % HSV_HUE_MAX,
                             255, intensity));
         }
 
