@@ -6,7 +6,7 @@
 # All rights reserved. Published under the GNU General Public License v3.0
 ################################################################################
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 project(blinken-sort)
 
@@ -45,8 +45,8 @@ enable_testing()
 # enable -march=native on Release builds
 if(CMAKE_BUILD_TYPE STREQUAL "Release" AND NOT MINGW)
   include(CheckCXXCompilerFlag)
-  check_cxx_compiler_flag(-march=native THRILL_HAS_MARCH_NATIVE)
-  if(THRILL_HAS_MARCH_NATIVE)
+  check_cxx_compiler_flag(-march=native CXX_HAS_MARCH_NATIVE)
+  if(CXX_HAS_MARCH_NATIVE)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
   endif()
 endif()
